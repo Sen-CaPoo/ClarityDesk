@@ -1,0 +1,363 @@
+@page
+@model ClarityDesk.Pages.Issues.IndexModel
+@{
+    ViewData["Title"] = "回報單管理";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">回報單管理</h2>
+            <p class="text-muted">管理與追蹤所有顧客問題回報單</p>
+        </div>
+        <div class="col-auto">
+            <a asp-page="Create" class="btn btn-primary btn-lg px-4 py-3 shadow-lg" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); border: none; font-size: 1.1rem; font-weight: 600;">
+                <i class="bi bi-plus-circle-fill me-2" style="font-size: 1.3rem;"></i>
+                建立新回報單
+            </a>
+        </div>
+    </div>
+
+    <!-- 篩選表單 -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel"></i> 篩選條件
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" id="filterForm">
+                <!-- 隱藏的頁碼欄位 -->
+                <input type="hidden" name="Page" id="pageInput" value="@Model.Page" />
+                
+                <div class="row g-3">
+                    <!-- 關鍵字搜尋 -->
+                    <div class="col-md-4">
+                        <label asp-for="Filter.SearchKeyword" class="form-label">關鍵字搜尋</label>
+                        <input asp-for="Filter.SearchKeyword" 
+                               class="form-control" 
+                               placeholder="輸入標題、內容或顧客名稱">
+                    </div>
+
+                    <!-- 處理狀態 -->
+                    <div class="col-md-2">
+                        <label asp-for="Filter.Status" class="form-label">處理狀態</label>
+                        <select asp-for="Filter.Status" class="form-select" asp-items="Html.GetEnumSelectList<ClarityDesk.Models.Enums.IssueStatus>()">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+
+                    <!-- 緊急程度 -->
+                    <div class="col-md-2">
+                        <label asp-for="Filter.Priority" class="form-label">緊急程度</label>
+                        <select asp-for="Filter.Priority" class="form-select" asp-items="Html.GetEnumSelectList<ClarityDesk.Models.Enums.PriorityLevel>()">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+
+                    <!-- 日期區間 -->
+                    <div class="col-md-4">
+                        <label class="form-label">日期區間</label>
+                        <div class="input-group">
+                            <input name="Filter.StartDate" 
+                                type="date"
+                                class="form-control"
+                                autocomplete="off"
+                                value="@(Model.Filter.StartDate?.ToString("yyyy-MM-dd") ?? "")"
+                                placeholder="開始日期">
+                            <span class="input-group-text">至</span>
+                            <input name="Filter.EndDate" 
+                                type="date"
+                                class="form-control"
+                                autocomplete="off"
+                                value="@(Model.Filter.EndDate?.ToString("yyyy-MM-dd") ?? "")"
+                                placeholder="結束日期">
+                        </div>
+                    </div>
+
+                    <!-- 問題所屬單位 -->
+                    <div class="col-md-4">
+                        <label class="form-label">問題所屬單位</label>
+                        @if (Model.Departments != null && Model.Departments.Any())
+                        {
+                            @foreach (var dept in Model.Departments)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="Filter.DepartmentIds" 
+                                           value="@dept.Id" 
+                                           id="dept_@dept.Id"
+                                           checked="@(Model.Filter.DepartmentIds?.Contains(dept.Id) == true)">
+                                    <label class="form-check-label" for="dept_@dept.Id">
+                                        @dept.Name
+                                    </label>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <!-- 指派處理人員 -->
+                    <div class="col-md-3">
+                        <label class="form-label">指派處理人員</label>
+                        @if (Model.Users != null && Model.Users.Any())
+                        {
+                            <div style="max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.5rem;">
+                                @foreach (var user in Model.Users)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="Filter.AssignedUserIds" 
+                                               value="@user.Id" 
+                                               id="user_@user.Id"
+                                               checked="@(Model.Filter.AssignedUserIds?.Contains(user.Id) == true)">
+                                        <label class="form-check-label" for="user_@user.Id">
+                                            @user.DisplayName
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- 按鈕 -->
+                    <div class="col-md-5 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-search"></i> 搜尋
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="resetFilters()">
+                            <i class="bi bi-arrow-counterclockwise"></i> 重設
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 統計資訊 -->
+    @if (Model.Statistics != null)
+    {
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary">@Model.Statistics.TotalIssues</h3>
+                        <p class="text-muted mb-0">總回報單數</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h3 class="text-warning">@Model.Statistics.PendingIssues</h3>
+                        <p class="text-muted mb-0">未處理</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h3 class="text-success">@Model.Statistics.CompletedIssues</h3>
+                        <p class="text-muted mb-0">已處理</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <h3 class="text-danger">@Model.Statistics.HighPriorityIssues</h3>
+                        <p class="text-muted mb-0">高優先級</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 回報單列表 -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul"></i> 回報單列表
+                <span class="badge bg-secondary">@Model.PagedIssues.TotalCount 筆</span>
+            </h5>
+            <a asp-page-handler="ExportExcel" class="btn btn-success btn-sm">
+                <i class="bi bi-download"></i> 下載 Excel
+            </a>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.PagedIssues.Items.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%;">編號</th>
+                                <th style="width: 25%;">標題</th>
+                                <th style="width: 10%;">顧客名稱</th>
+                                <th style="width: 10%;">回報人</th>
+                                <th style="width: 10%;">紀錄日期</th>
+                                <th style="width: 10%;">處理狀態</th>
+                                <th style="width: 10%;">緊急程度</th>
+                                <th style="width: 10%;">指派人員</th>
+                                <th style="width: 10%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var issue in Model.PagedIssues.Items)
+                            {
+                                <tr>
+                                    <td>@issue.Id</td>
+                                    <td>
+                                        <a asp-page="Details" asp-route-id="@issue.Id" class="text-decoration-none">
+                                            @issue.Title
+                                        </a>
+                                    </td>
+                                    <td>@issue.CustomerName</td>
+                                    <td>@issue.ReporterName</td>
+                                    <td>@issue.RecordDate.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        @switch (issue.Status)
+                                        {
+                                            case ClarityDesk.Models.Enums.IssueStatus.Pending:
+                                                <span class="badge bg-warning text-dark">未處理</span>
+                                                break;
+                                            case ClarityDesk.Models.Enums.IssueStatus.Completed:
+                                                <span class="badge bg-success">已處理</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @await Component.InvokeAsync("PriorityBadge", issue.Priority)
+                                    </td>
+                                    <td>@issue.AssignedUserName</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-page="Edit" asp-route-id="@issue.Id" class="btn btn-outline-primary" title="編輯">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a asp-page="Details" asp-route-id="@issue.Id" class="btn btn-outline-info" title="查看">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分頁控制 -->
+                @if (Model.PagedIssues.TotalPages > 1)
+                {
+                    <nav aria-label="分頁導航" class="mt-3 px-3 pb-3">
+                        <ul class="pagination justify-content-center mb-0">
+                            <!-- 上一頁 -->
+                            <li class="page-item @(Model.PagedIssues.CurrentPage == 1 ? "disabled" : "")">
+                                <button type="button" class="page-link" 
+                                        onclick="changePage(@(Model.PagedIssues.CurrentPage - 1))"
+                                        @(Model.PagedIssues.CurrentPage == 1 ? "disabled" : "")>
+                                    上一頁
+                                </button>
+                            </li>
+
+                            <!-- 頁碼 -->
+                            @for (int i = 1; i <= Model.PagedIssues.TotalPages; i++)
+                            {
+                                <li class="page-item @(Model.PagedIssues.CurrentPage == i ? "active" : "")">
+                                    <button type="button" class="page-link" 
+                                            onclick="changePage(@i)">
+                                        @i
+                                    </button>
+                                </li>
+                            }
+
+                            <!-- 下一頁 -->
+                            <li class="page-item @(Model.PagedIssues.CurrentPage == Model.PagedIssues.TotalPages ? "disabled" : "")">
+                                <button type="button" class="page-link" 
+                                        onclick="changePage(@(Model.PagedIssues.CurrentPage + 1))"
+                                        @(Model.PagedIssues.CurrentPage == Model.PagedIssues.TotalPages ? "disabled" : "")>
+                                    下一頁
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3">目前沒有符合條件的回報單</p>
+                    <a asp-page="Create" class="btn btn-primary">建立第一筆回報單</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 重設篩選條件
+        function resetFilters() {
+            // 直接導向無參數的頁面，避免瀏覽器自動填入日期
+            window.location.href = window.location.pathname;
+        }
+    
+        // 變更頁碼函數
+        function changePage(pageNumber) {
+            document.getElementById('pageInput').value = pageNumber;
+            document.getElementById('filterForm').submit();
+        }
+        
+        // 在表單提交前清除空的日期欄位
+        document.getElementById('filterForm').addEventListener('submit', function(e) {
+            // 清除空的日期欄位,避免傳遞預設值
+            const startDateInput = document.querySelector('input[name="Filter.StartDate"]');
+            const endDateInput = document.querySelector('input[name="Filter.EndDate"]');
+            
+            if (startDateInput && !startDateInput.value) {
+                startDateInput.removeAttribute('name');
+            }
+            if (endDateInput && !endDateInput.value) {
+                endDateInput.removeAttribute('name');
+            }
+        });
+        
+        // 表單自動提交（當下拉選單變更時）
+        document.querySelectorAll('#filterForm select').forEach(select => {
+            select.addEventListener('change', function() {
+                // 重設為第一頁
+                document.getElementById('pageInput').value = 1;
+                document.getElementById('filterForm').submit();
+            });
+        });
+        
+        // 當搜尋按鈕按下時也重設為第一頁
+        const submitBtn = document.querySelector('#filterForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+                document.getElementById('pageInput').value = 1;
+            });
+        }
+
+        // 載入時若無日期篩選參數，確保欄位保持空白
+        document.addEventListener('DOMContentLoaded', function () {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('Filter.StartDate')) {
+                const startDateInput = document.querySelector('input[name="Filter.StartDate"]');
+                if (startDateInput) {
+                    startDateInput.value = '';
+                    startDateInput.defaultValue = '';
+                }
+            }
+            if (!params.has('Filter.EndDate')) {
+                const endDateInput = document.querySelector('input[name="Filter.EndDate"]');
+                if (endDateInput) {
+                    endDateInput.value = '';
+                    endDateInput.defaultValue = '';
+                }
+            }
+        });
+    </script>
+}

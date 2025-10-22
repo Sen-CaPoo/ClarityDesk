@@ -1,0 +1,131 @@
+@page
+@model ClarityDesk.Pages.Admin.Departments.IndexModel
+@{
+    ViewData["Title"] = "問題所屬單位管理";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-diagram-3"></i> 問題所屬單位管理
+        </h2>
+        <a asp-page="./Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> 新增單位
+        </a>
+    </div>
+
+    <!-- 篩選選項 -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-auto">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" 
+                               name="includeInactive" value="true" 
+                               id="includeInactive" 
+                               @(Model.IncludeInactive ? "checked" : "")
+                               onchange="this.form.submit()">
+                        <label class="form-check-label" for="includeInactive">
+                            顯示已停用的單位
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 單位列表 -->
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Departments == null || !Model.Departments.Any())
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                    <p class="mt-3">目前沒有單位資料</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>單位名稱</th>
+                                <th>說明</th>
+                                <th>處理人員</th>
+                                <th>狀態</th>
+                                <th>建立時間</th>
+                                <th class="text-end">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var dept in Model.Departments)
+                            {
+                                <tr class="@(!dept.IsActive ? "table-secondary" : "")">
+                                    <td>
+                                        <strong>@dept.Name</strong>
+                                    </td>
+                                    <td>
+                                        @(dept.Description ?? "-")
+                                    </td>
+                                    <td>
+                                        @if (dept.AssignedUsers.Any())
+                                        {
+                                            <span class="badge bg-info">@dept.AssignedUsers.Count 人</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">未指派</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (dept.IsActive)
+                                        {
+                                            <span class="badge bg-success">啟用</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">已停用</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @dept.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-page="./Edit" asp-route-id="@dept.Id" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i> 編輯
+                                        </a>
+                                        @if (dept.IsActive)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="confirmDelete(@dept.Id, '@dept.Name')">
+                                                <i class="bi bi-trash"></i> 停用
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 刪除確認表單 -->
+<form id="deleteForm" method="post" style="display: none;">
+    <input type="hidden" name="id" id="deleteId" />
+</form>
+
+@section Scripts {
+    <script>
+        function confirmDelete(id, name) {
+            if (confirm(`確定要停用單位「${name}」嗎？\n\n停用後此單位將不會在回報單建立時顯示，但現有回報單不受影響。`)) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('deleteForm').submit();
+            }
+        }
+    </script>
+}

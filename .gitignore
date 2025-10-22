@@ -1,0 +1,130 @@
+# .NET Core / ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+*.cache
+packages/
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Rider
+.idea/
+*.sln.iml
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Sensitive configuration files
+appsettings.Development.json
+appsettings.Production.json
+*.Development.json
+*.Production.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.mdf
+*.ldf
+*.ndf
+
+# Migrations (keep tracked but ignore in some cases)
+# Uncomment if you want to ignore migrations:
+# Migrations/
+
+# Node modules (if using npm/yarn for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+
+# Publish
+publish/
+*.Publish.xml
+PublishScripts/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Static Web Assets
+staticwebassets/
+staticwebassets.removed.txt
+rpswa.dswa.cache.json
+
+# Azure
+*.pubxml
+*.azurePubxml
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+stdout*.log
+
+# Visual Studio
+.vs/

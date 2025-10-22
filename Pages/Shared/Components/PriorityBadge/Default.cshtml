@@ -1,0 +1,21 @@
+@model ClarityDesk.Models.Enums.PriorityLevel
+
+@{
+    var badgeClass = Model switch
+    {
+        ClarityDesk.Models.Enums.PriorityLevel.High => "badge-priority-high",
+        ClarityDesk.Models.Enums.PriorityLevel.Medium => "badge-priority-medium",
+        ClarityDesk.Models.Enums.PriorityLevel.Low => "badge-priority-low",
+        _ => "badge-secondary"
+    };
+
+    var displayText = Model switch
+    {
+        ClarityDesk.Models.Enums.PriorityLevel.High => "高",
+        ClarityDesk.Models.Enums.PriorityLevel.Medium => "中",
+        ClarityDesk.Models.Enums.PriorityLevel.Low => "低",
+        _ => "未知"
+    };
+}
+
+<span class="badge @badgeClass">@displayText</span>

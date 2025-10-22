@@ -1,0 +1,193 @@
+@page
+@model ClarityDesk.Pages.Admin.Users.IndexModel
+@{
+    ViewData["Title"] = "使用者權限管理";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-people-fill me-2"></i>使用者權限管理
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0">使用者清單</h5>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="form-check form-switch d-inline-block">
+                                <input class="form-check-input" type="checkbox" id="includeInactive" 
+                                       @(Model.IncludeInactive ? "checked" : "") 
+                                       onchange="this.form.submit()">
+                                <label class="form-check-label" for="includeInactive">
+                                    顯示停用使用者
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Users == null || !Model.Users.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted"></i>
+                            <p class="text-muted mt-3">目前沒有使用者資料</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>頭像</th>
+                                        <th>顯示名稱</th>
+                                        <th>Email</th>
+                                        <th>角色</th>
+                                        <th>狀態</th>
+                                        <th>註冊時間</th>
+                                        <th class="text-center">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in Model.Users)
+                                    {
+                                        <tr class="@(!user.IsActive ? "table-secondary" : "")">
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(user.PictureUrl))
+                                                {
+                                                    <img src="@user.PictureUrl" alt="@user.DisplayName" 
+                                                         class="rounded-circle" width="40" height="40">
+                                                }
+                                                else
+                                                {
+                                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
+                                                         style="width: 40px; height: 40px;">
+                                                        <i class="bi bi-person-fill text-white"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong>@user.DisplayName</strong>
+                                                @if (!user.IsActive)
+                                                {
+                                                    <span class="badge bg-secondary ms-2">已停用</span>
+                                                }
+                                            </td>
+                                            <td>@(string.IsNullOrEmpty(user.Email) ? "-" : user.Email)</td>
+                                            <td>
+                                                @if (user.Role == ClarityDesk.Models.Enums.UserRole.Admin)
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-shield-fill-check me-1"></i>管理人員
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-primary">
+                                                        <i class="bi bi-person-fill me-1"></i>普通使用者
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (user.IsActive)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>啟用
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-x-circle-fill me-1"></i>停用
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td>@user.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    @if (user.Role == ClarityDesk.Models.Enums.UserRole.Admin)
+                                                    {
+                                                        <form method="post" asp-page-handler="UpdateRole" class="d-inline">
+                                                            <input type="hidden" name="userId" value="@user.Id" />
+                                                            <input type="hidden" name="newRole" value="@((int)ClarityDesk.Models.Enums.UserRole.User)" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary" 
+                                                                    onclick="return confirm('確定要將此使用者變更為普通使用者嗎?')">
+                                                                <i class="bi bi-arrow-down-circle me-1"></i>降級為普通使用者
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    else
+                                                    {
+                                                        <form method="post" asp-page-handler="UpdateRole" class="d-inline">
+                                                            <input type="hidden" name="userId" value="@user.Id" />
+                                                            <input type="hidden" name="newRole" value="@((int)ClarityDesk.Models.Enums.UserRole.Admin)" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                                    onclick="return confirm('確定要將此使用者升級為管理人員嗎?')">
+                                                                <i class="bi bi-arrow-up-circle me-1"></i>升級為管理人員
+                                                            </button>
+                                                        </form>
+                                                    }
+
+                                                    <form method="post" asp-page-handler="ToggleActive" class="d-inline ms-2">
+                                                        <input type="hidden" name="userId" value="@user.Id" />
+                                                        <input type="hidden" name="isActive" value="@(!user.IsActive)" />
+                                                        @if (user.IsActive)
+                                                        {
+                                                            <button type="submit" class="btn btn-sm btn-outline-secondary" 
+                                                                    onclick="return confirm('確定要停用此使用者嗎? 停用後該使用者將無法登入系統。')">
+                                                                <i class="bi bi-x-circle me-1"></i>停用
+                                                            </button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                                    onclick="return confirm('確定要啟用此使用者嗎?')">
+                                                                <i class="bi bi-check-circle me-1"></i>啟用
+                                                            </button>
+                                                        }
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                共 <strong>@Model.Users.Count()</strong> 位使用者
+                                (@Model.Users.Count(u => u.Role == ClarityDesk.Models.Enums.UserRole.Admin) 位管理人員, 
+                                @Model.Users.Count(u => u.Role == ClarityDesk.Models.Enums.UserRole.User) 位普通使用者)
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 自動關閉成功訊息
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert-success');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 3000);
+    </script>
+}

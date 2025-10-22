@@ -1,0 +1,272 @@
+@page "{id:int}"
+@model ClarityDesk.Pages.Issues.DetailsModel
+@{
+    ViewData["Title"] = $"回報單詳情 #{Model.IssueReport?.Id}";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            @if (Model.IssueReport != null)
+            {
+                <!-- 主要資訊卡片 -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">
+                                <i class="bi bi-file-text"></i> 回報單詳情 #@Model.IssueReport.Id
+                            </h4>
+                            <div>
+                                @switch (Model.IssueReport.Status)
+                                {
+                                    case ClarityDesk.Models.Enums.IssueStatus.Pending:
+                                        <span class="badge bg-warning text-dark fs-6">未處理</span>
+                                        break;
+                                    case ClarityDesk.Models.Enums.IssueStatus.Completed:
+                                        <span class="badge bg-success fs-6">已處理</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <!-- 問題標題 -->
+                            <div class="col-12">
+                                <h5 class="text-primary mb-2">
+                                    <i class="bi bi-chat-left-text"></i> 問題標題
+                                </h5>
+                                <p class="fs-5 fw-bold">@Model.IssueReport.Title</p>
+                            </div>
+
+                            <!-- 問題內容 -->
+                            <div class="col-12">
+                                <h5 class="text-primary mb-2">
+                                    <i class="bi bi-card-text"></i> 問題內容
+                                </h5>
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <p class="mb-0" style="white-space: pre-wrap;">@Model.IssueReport.Content</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 基本資訊 -->
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-3">
+                                            <i class="bi bi-info-circle"></i> 基本資訊
+                                        </h6>
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-muted" style="width: 40%;">紀錄日期：</td>
+                                                    <td><strong>@Model.IssueReport.RecordDate.ToString("yyyy/MM/dd HH:mm:ss")</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-muted">緊急程度：</td>
+                                                    <td>
+                                                        @await Component.InvokeAsync("PriorityBadge", Model.IssueReport.Priority)
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-muted">回報人：</td>
+                                                    <td><strong>@Model.IssueReport.ReporterName</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-muted">指派人員：</td>
+                                                    <td><strong>@Model.IssueReport.AssignedUserName</strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 顧客資訊 -->
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-3">
+                                            <i class="bi bi-person"></i> 顧客資訊
+                                        </h6>
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-muted" style="width: 40%;">聯絡人：</td>
+                                                    <td><strong>@Model.IssueReport.CustomerName</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-muted">連絡電話：</td>
+                                                    <td>
+                                                        <span id="customerPhone" class="text-decoration-none" style="cursor: pointer;" onclick="copyPhoneNumber()">
+                                                            <i class="bi bi-telephone"></i> @Model.IssueReport.CustomerPhone
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 所屬單位 -->
+                            <div class="col-12">
+                                <h6 class="text-muted mb-2">
+                                    <i class="bi bi-building"></i> 問題所屬單位
+                                </h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @if (Model.IssueReport.DepartmentNames.Any())
+                                    {
+                                        @foreach (var deptName in Model.IssueReport.DepartmentNames)
+                                        {
+                                            <span class="badge bg-secondary fs-6">@deptName</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">尚未指派單位</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- 時間資訊 -->
+                            <div class="col-12">
+                                <hr />
+                                <div class="row text-muted small">
+                                    <div class="col-md-4">
+                                        <i class="bi bi-clock"></i> 建立時間：@Model.IssueReport.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")
+                                    </div>
+                                    <div class="col-md-4 text-md-center">
+                                        <i class="bi bi-clock-history"></i> 最後修改：@Model.IssueReport.UpdatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        @if (Model.IssueReport.LastModifiedByUserName != null)
+                                        {
+                                            <i class="bi bi-person"></i> <text>最後修改人：</text>@Model.IssueReport.LastModifiedByUserName
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">尚未修改</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按鈕 -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <a asp-page="Index" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> 返回列表
+                                </a>
+                                <a asp-page="Edit" asp-route-id="@Model.IssueReport.Id" class="btn btn-warning">
+                                    <i class="bi bi-pencil"></i> 編輯
+                                </a>
+                            </div>
+                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('確定要刪除此回報單嗎？此操作無法復原。');">
+                                <input type="hidden" name="id" value="@Model.IssueReport.Id" />
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> 刪除
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    找不到指定的回報單。
+                </div>
+                <a asp-page="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回列表
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyPhoneNumber() {
+        const phoneElement = document.getElementById('customerPhone');
+        const phoneNumber = '@(Model.IssueReport.CustomerPhone ?? "")';
+        
+        // 使用 Clipboard API 複製電話號碼
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(phoneNumber).then(function() {
+                // 顯示成功訊息
+                showCopyMessage('已複製電話');
+            }).catch(function(err) {
+                // 如果失敗，嘗試使用舊方法
+                fallbackCopyTextToClipboard(phoneNumber);
+            });
+        } else {
+            // 不支援 Clipboard API，使用舊方法
+            fallbackCopyTextToClipboard(phoneNumber);
+        }
+    }
+
+    // 備用複製方法（適用於較舊的瀏覽器）
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.top = '-9999px';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showCopyMessage('已複製電話');
+            } else {
+                showCopyMessage('複製失敗，請手動複製', 'danger');
+            }
+        } catch (err) {
+            showCopyMessage('複製失敗，請手動複製', 'danger');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    // 顯示複製訊息
+    function showCopyMessage(message, type = 'success') {
+        // 移除舊的提示訊息
+        const oldAlert = document.querySelector('.copy-alert');
+        if (oldAlert) {
+            oldAlert.remove();
+        }
+
+        // 建立新的提示訊息
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show copy-alert`;
+        alertDiv.style.position = 'fixed';
+        alertDiv.style.top = '20px';
+        alertDiv.style.right = '20px';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.style.minWidth = '200px';
+        alertDiv.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // 3秒後自動移除
+        setTimeout(function() {
+            alertDiv.classList.remove('show');
+            setTimeout(function() {
+                alertDiv.remove();
+            }, 150);
+        }, 3000);
+    }
+</script>

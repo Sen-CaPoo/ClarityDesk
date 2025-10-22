@@ -1,0 +1,240 @@
+/* ===================================
+   ClarityDesk 商務白風格樣式
+   =================================== */
+
+/* CSS 變數定義 */
+:root {
+    --primary-color: #2563eb;       /* 淺藍色 */
+    --primary-hover: #1d4ed8;       /* 深藍色 */
+    --secondary-color: #64748b;     /* 灰藍色 */
+    --success-color: #10b981;       /* 綠色 */
+    --warning-color: #f59e0b;       /* 橙色 */
+    --danger-color: #ef4444;        /* 紅色 */
+    --background-color: #ffffff;    /* 白色背景 */
+    --card-background: #f8fafc;     /* 淺灰背景 */
+    --border-color: #e2e8f0;        /* 邊框顏色 */
+    --text-primary: #1e293b;        /* 主要文字顏色 */
+    --text-secondary: #64748b;      /* 次要文字顏色 */
+    --border-radius: 0.75rem;       /* 圓角半徑 */
+    --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* 基礎樣式 */
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--card-background);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* 導覽列樣式 */
+.navbar-brand {
+    color: var(--primary-color) !important;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+/* 卡片樣式 */
+.card {
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: white;
+    font-weight: 600;
+    border-bottom: none;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+/* 按鈕樣式 */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, 
+.form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem var(--primary-color);
+}
+
+/* 表單樣式 */
+.form-control, .form-select {
+    border-radius: 0.5rem;
+    border-color: var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+/* 表格樣式 */
+.table {
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+}
+
+.table thead th {
+    background-color: var(--card-background);
+    color: var(--text-primary);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table tbody tr:hover {
+    background-color: var(--card-background);
+    transition: background-color 0.2s ease;
+}
+
+/* 徽章樣式 */
+.badge {
+    border-radius: 0.375rem;
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+}
+
+.badge-priority-high {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.badge-priority-medium {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.badge-priority-low {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.badge-status-pending {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.badge-status-inprogress {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.badge-status-completed {
+    background-color: var(--success-color);
+    color: white;
+}
+
+/* 頁尾樣式 */
+.footer {
+    background-color: var(--background-color);
+    color: var(--text-secondary);
+    padding: 1.5rem 0;
+    margin-top: auto;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .table-responsive {
+        border-radius: var(--border-radius);
+    }
+}
+
+/* 載入動畫 */
+.spinner-border {
+    color: var(--primary-color);
+}
+
+/* 提示訊息 */
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+}
+
+.alert-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.alert-warning {
+    background-color: #fed7aa;
+    color: #92400e;
+}
+
+.alert-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.alert-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* 輔助類別 */
+.text-muted {
+    color: var(--text-secondary) !important;
+}
+
+.shadow-sm {
+    box-shadow: var(--box-shadow) !important;
+}
+
+.shadow-lg {
+    box-shadow: var(--box-shadow-lg) !important;
+}

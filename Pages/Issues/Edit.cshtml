@@ -1,0 +1,224 @@
+@page "{id:int}"
+@model ClarityDesk.Pages.Issues.EditModel
+@{
+    ViewData["Title"] = "編輯回報單";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="bi bi-pencil-square"></i> 編輯回報單 #@Model.Id
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <div class="row g-3">
+                            <!-- 標題 -->
+                            <div class="col-12">
+                                <label asp-for="IssueReport.Title" class="form-label">
+                                    問題標題 <span class="text-danger">*</span>
+                                    <small class="text-muted ms-2" id="titleCounter">0/30</small>
+                                </label>
+                                <input asp-for="IssueReport.Title" class="form-control" placeholder="請輸入問題標題" maxlength="30" />
+                                <span asp-validation-for="IssueReport.Title" class="text-danger"></span>
+                            </div>
+
+                            <!-- 問題內容 -->
+                            <div class="col-12">
+                                <label asp-for="IssueReport.Content" class="form-label">
+                                    問題內容 <span class="text-danger">*</span>
+                                    <small class="text-muted ms-2" id="contentCounter">0/150</small>
+                                </label>
+                                <textarea asp-for="IssueReport.Content" class="form-control" rows="5" placeholder="請詳細描述問題內容" maxlength="150"></textarea>
+                                <span asp-validation-for="IssueReport.Content" class="text-danger"></span>
+                            </div>
+
+                            <!-- 紀錄日期 -->
+                            <div class="col-md-4">
+                                <label asp-for="IssueReport.RecordDate" class="form-label">紀錄日期 <span class="text-danger">*</span></label>
+                                <input asp-for="IssueReport.RecordDate" type="datetime-local" class="form-control" />
+                                <span asp-validation-for="IssueReport.RecordDate" class="text-danger"></span>
+                            </div>
+
+                            <!-- 處理狀態 -->
+                            <div class="col-md-4">
+                                <label asp-for="IssueReport.Status" class="form-label">處理狀態 <span class="text-danger">*</span></label>
+                                <select asp-for="IssueReport.Status" class="form-select" asp-items="Html.GetEnumSelectList<ClarityDesk.Models.Enums.IssueStatus>()">
+                                    <option value="">-- 請選擇 --</option>
+                                </select>
+                                <span asp-validation-for="IssueReport.Status" class="text-danger"></span>
+                            </div>
+
+                            <!-- 緊急程度 -->
+                            <div class="col-md-4">
+                                <label asp-for="IssueReport.Priority" class="form-label">緊急程度 <span class="text-danger">*</span></label>
+                                <select asp-for="IssueReport.Priority" class="form-select" asp-items="Html.GetEnumSelectList<ClarityDesk.Models.Enums.PriorityLevel>()">
+                                    <option value="">-- 請選擇 --</option>
+                                </select>
+                                <span asp-validation-for="IssueReport.Priority" class="text-danger"></span>
+                            </div>
+
+                            <!-- 回報人 -->
+                            <div class="col-md-6">
+                                <label asp-for="IssueReport.ReporterName" class="form-label">回報人 <span class="text-danger">*</span></label>
+                                <input asp-for="IssueReport.ReporterName" class="form-control" placeholder="請輸入回報人姓名" />
+                                <span asp-validation-for="IssueReport.ReporterName" class="text-danger"></span>
+                            </div>
+
+                            <!-- 聯絡人 -->
+                            <div class="col-md-6">
+                                <label asp-for="IssueReport.CustomerName" class="form-label">聯絡人 <span class="text-danger">*</span></label>
+                                <input asp-for="IssueReport.CustomerName" class="form-control" placeholder="請輸入顧客姓名" />
+                                <span asp-validation-for="IssueReport.CustomerName" class="text-danger"></span>
+                            </div>
+
+                            <!-- 連絡電話 -->
+                            <div class="col-md-6">
+                                <label asp-for="IssueReport.CustomerPhone" class="form-label">連絡電話 <span class="text-danger">*</span></label>
+                                <input asp-for="IssueReport.CustomerPhone" type="tel" class="form-control" placeholder="例如：0912345678" />
+                                <span asp-validation-for="IssueReport.CustomerPhone" class="text-danger"></span>
+                            </div>
+
+                            <!-- 指派處理人員 -->
+                            <div class="col-md-6">
+                                <label asp-for="IssueReport.AssignedUserId" class="form-label">指派處理人員 <span class="text-danger">*</span></label>
+                                <select asp-for="IssueReport.AssignedUserId" class="form-select">
+                                    <option value="">-- 請選擇 --</option>
+                                    @if (Model.Users != null)
+                                    {
+                                        @foreach (var user in Model.Users)
+                                        {
+                                            <option value="@user.Id">@user.DisplayName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="IssueReport.AssignedUserId" class="text-danger"></span>
+                            </div>
+
+                            <!-- 問題所屬單位（多選） -->
+                            <div class="col-12">
+                                <label class="form-label">問題所屬單位 <span class="text-danger">*</span></label>
+                                <div class="card">
+                                    <div class="card-body">
+                                        @if (Model.Departments != null && Model.Departments.Any())
+                                        {
+                                            <div class="row">
+                                                @foreach (var dept in Model.Departments)
+                                                {
+                                                    <div class="col-md-4 mb-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" 
+                                                                   type="checkbox" 
+                                                                   name="IssueReport.DepartmentIds" 
+                                                                   value="@dept.Id" 
+                                                                   id="dept_@dept.Id"
+                                                                   checked="@(Model.IssueReport.DepartmentIds?.Contains(dept.Id) == true)">
+                                                            <label class="form-check-label" for="dept_@dept.Id">
+                                                                <strong>@dept.Name</strong>
+                                                                @if (!string.IsNullOrEmpty(dept.Description))
+                                                                {
+                                                                    <br />
+                                                                    <small class="text-muted">@dept.Description</small>
+                                                                }
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <p class="text-muted mb-0">尚未設定任何單位。</p>
+                                        }
+                                    </div>
+                                </div>
+                                <span asp-validation-for="IssueReport.DepartmentIds" class="text-danger"></span>
+                            </div>
+
+                            <!-- 操作按鈕 -->
+                            <div class="col-12">
+                                <hr />
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <a asp-page="Index" class="btn btn-secondary me-2">
+                                            <i class="bi bi-arrow-left"></i> 取消
+                                        </a>
+                                        <a asp-page="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+                                            <i class="bi bi-eye"></i> 查看詳情
+                                        </a>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning text-dark">
+                                        <i class="bi bi-check-circle"></i> 儲存變更
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 變更提示 -->
+            <div class="alert alert-warning mt-3" role="alert">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>提醒：</strong> 編輯後的資料將會覆蓋原有內容，請確認後再儲存。
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 標題字數計數器
+            const titleInput = document.querySelector('input[name="IssueReport.Title"]');
+            const titleCounter = document.getElementById('titleCounter');
+            if (titleInput && titleCounter) {
+                titleInput.addEventListener('input', function() {
+                    const length = this.value.length;
+                    titleCounter.textContent = `${length}/30`;
+                    if (length > 25) {
+                        titleCounter.classList.add('text-warning');
+                    } else {
+                        titleCounter.classList.remove('text-warning');
+                    }
+                });
+                // 初始化計數器
+                titleCounter.textContent = `${titleInput.value.length}/30`;
+            }
+
+            // 內容字數計數器
+            const contentInput = document.querySelector('textarea[name="IssueReport.Content"]');
+            const contentCounter = document.getElementById('contentCounter');
+            if (contentInput && contentCounter) {
+                contentInput.addEventListener('input', function() {
+                    const length = this.value.length;
+                    contentCounter.textContent = `${length}/150`;
+                    if (length > 130) {
+                        contentCounter.classList.add('text-warning');
+                    } else {
+                        contentCounter.classList.remove('text-warning');
+                    }
+                });
+                // 初始化計數器
+                contentCounter.textContent = `${contentInput.value.length}/150`;
+            }
+        });
+
+        // 表單提交前驗證至少選擇一個單位
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const checkboxes = document.querySelectorAll('input[name="IssueReport.DepartmentIds"]:checked');
+            if (checkboxes.length === 0) {
+                e.preventDefault();
+                alert('請至少選擇一個問題所屬單位');
+                return false;
+            }
+        });
+    </script>
+}
