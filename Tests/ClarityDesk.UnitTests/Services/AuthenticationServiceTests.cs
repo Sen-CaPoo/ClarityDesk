@@ -182,4 +182,54 @@ public class AuthenticationServiceTests
         // Assert
         result.Should().BeTrue();
     }
+
+    /// <summary>
+    /// 測試遊客登入 - 首次登入應該建立遊客帳號
+    /// </summary>
+    [Fact]
+    public async Task LoginAsGuestAsync_FirstTime_CreatesGuestUser()
+    {
+        // Arrange
+        await using var context = CreateInMemoryDbContext();
+        var service = new AuthenticationService(context);
+
+        // Act
+        var result = await service.LoginAsGuestAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.LineUserId.Should().Be("guest");
+        result.DisplayName.Should().Be("訪客");
+        result.Role.Should().Be(UserRole.User);
+        result.IsActive.Should().BeTrue();
+
+        // 驗證遊客使用者已儲存至資料庫
+        var guestUser = await context.Users.FirstOrDefaultAsync(u => u.LineUserId == "guest");
+        guestUser.Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// 測試遊客登入 - 已存在遊客帳號應該回傳現有帳號
+    /// </summary>
+    [Fact]
+    public async Task LoginAsGuestAsync_ExistingGuest_ReturnsExistingUser()
+    {
+        // Arrange
+        await using var context = CreateInMemoryDbContext();
+        var service = new AuthenticationService(context);
+
+        // 第一次登入建立遊客帳號
+        await service.LoginAsGuestAsync();
+
+        // Act - 第二次登入
+        var result = await service.LoginAsGuestAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.LineUserId.Should().Be("guest");
+        
+        // 驗證只有一個遊客帳號
+        var guestCount = await context.Users.CountAsync(u => u.LineUserId == "guest");
+        guestCount.Should().Be(1);
+    }
 }

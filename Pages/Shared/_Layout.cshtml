@@ -45,10 +45,28 @@
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
                         <div class="d-flex align-items-center">
-                            <span class="navbar-text me-3">
-                                <img src="@User.FindFirst("picture")?.Value" alt="頭像" class="rounded-circle me-2" 
-                                     style="width: 32px; height: 32px;" onerror="this.src='/images/default-avatar.png'" />
-                                @User.Identity.Name
+                            <span class="navbar-text me-3 d-flex align-items-center">
+                                @{
+                                    var pictureUrl = User.FindFirst("picture")?.Value;
+                                }
+                                @if (!string.IsNullOrEmpty(pictureUrl))
+                                {
+                                    <img src="@pictureUrl" alt="頭像" class="rounded-circle me-2" 
+                                         style="width: 32px; height: 32px; object-fit: cover;" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" />
+                                    <span class="rounded-circle bg-secondary text-white align-items-center justify-content-center me-2" 
+                                          style="width: 32px; height: 32px; display: none;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center me-2" 
+                                          style="width: 32px; height: 32px;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </span>
+                                }
+                                <span>@User.Identity.Name</span>
                             </span>
                             <form method="post" asp-page="/Account/Logout" class="d-inline">
                                 <button type="submit" class="btn btn-outline-secondary btn-sm">登出</button>

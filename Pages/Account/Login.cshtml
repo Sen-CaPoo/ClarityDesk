@@ -23,8 +23,20 @@
                         </button>
                     </form>
 
+                    <div class="divider my-4">
+                        <span class="divider-text">或</span>
+                    </div>
+
+                    <form method="post" asp-page-handler="Guest">
+                        <button type="submit" class="btn btn-outline-secondary btn-lg w-100">
+                            <i class="bi bi-person me-2"></i>
+                            以訪客身份繼續
+                        </button>
+                    </form>
+
                     <p class="text-muted small mt-4 mb-0">
-                        透過 LINE 帳號快速登入，首次登入將自動建立帳號
+                        透過 LINE 帳號快速登入，首次登入將自動建立帳號<br>
+                        或選擇訪客模式以一般使用者身份快速體驗
                     </p>
                 </div>
             </div>
@@ -55,6 +67,25 @@
     .btn-success:hover {
         background-color: #05b04c;
         border-color: #05b04c;
+    }
+
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .divider-text {
+        padding: 0 10px;
+        color: #6c757d;
+        font-size: 0.875rem;
     }
 
     body {

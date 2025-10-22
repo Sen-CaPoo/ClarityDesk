@@ -34,4 +34,10 @@ public interface IAuthenticationService
     /// <param name="userId">使用者 ID</param>
     /// <returns>帳號是否啟用</returns>
     Task<bool> IsUserActiveAsync(int userId);
+
+    /// <summary>
+    /// 以遊客身份登入（使用通用遊客帳號）
+    /// </summary>
+    /// <returns>遊客使用者 DTO</returns>
+    Task<UserDto> LoginAsGuestAsync();
 }

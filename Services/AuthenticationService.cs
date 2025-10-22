@@ -86,4 +86,34 @@ public class AuthenticationService : IAuthenticationService
         var user = await _context.Users.FindAsync(userId);
         return user?.IsActive ?? false;
     }
+
+    /// <summary>
+    /// 以遊客身份登入（使用通用遊客帳號）
+    /// </summary>
+    public async Task<UserDto> LoginAsGuestAsync()
+    {
+        // 查詢遊客帳號（LINE User ID 為 "guest"）
+        var guestUser = await _context.Users
+            .FirstOrDefaultAsync(u => u.LineUserId == "guest");
+
+        if (guestUser == null)
+        {
+            // 如果遊客帳號不存在，建立一個
+            guestUser = new User
+            {
+                LineUserId = "guest",
+                DisplayName = "訪客",
+                PictureUrl = null,
+                Role = UserRole.User,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(guestUser);
+            await _context.SaveChangesAsync();
+        }
+
+        return guestUser.ToDto();
+    }
 }
