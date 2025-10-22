@@ -1,0 +1,5 @@
+/speckit.plan
+使用本專案 .Net Core 8，資料庫採用 Azure SQL，使用 EF Core Code First workflow，會整合 LINE Login 處理登入功能。
+站台會架設在 Windows IIS 上面。
+不使用 AutoMapper to map DTO，而是使用 POCO instead。
+不使用 Redis。
