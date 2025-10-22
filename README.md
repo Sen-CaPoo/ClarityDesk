@@ -197,7 +197,7 @@ dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
 ## 📦 部署
 
-詳細部署說明請參考 [DEPLOYMENT.md](DEPLOYMENT.md)
+詳細部署說明請參考 [docs/deployment/DEPLOYMENT.md](docs/deployment/DEPLOYMENT.md)
 
 ### 快速部署至 IIS
 
@@ -210,6 +210,8 @@ dotnet publish -c Release -o ./publish
 # 4. 設定應用程式集區為「無受管理的程式碼」
 # 5. 重新啟動 IIS
 ```
+
+完整檢查清單請見 [docs/deployment/IIS-DEPLOYMENT-CHECKLIST.md](docs/deployment/IIS-DEPLOYMENT-CHECKLIST.md)
 
 ## 📁 專案結構
 
@@ -239,6 +241,17 @@ ClarityDesk/
 │   ├── css/              # 樣式表
 │   ├── js/               # JavaScript
 │   └── lib/              # 前端套件
+├── docs/                  # 專案文件
+│   ├── deployment/        # 部署文件
+│   ├── development/       # 開發指南
+│   ├── changelogs/        # 變更記錄
+│   └── *.md              # 使用者手冊等
+├── scripts/               # 腳本工具
+│   └── *.ps1             # PowerShell 腳本
+├── database/              # 資料庫腳本
+│   └── *.sql             # SQL 腳本
+├── specs/                 # 規格文件
+│   └── 001-customer-issue-tracker/  # 功能規格
 └── Tests/                 # 測試專案
     ├── UnitTests/        # 單元測試
     └── IntegrationTests/ # 整合測試
@@ -246,7 +259,17 @@ ClarityDesk/
 
 ## 🤝 貢獻指南
 
-詳細貢獻指南請參考 [CONTRIBUTING.md](CONTRIBUTING.md)
+詳細貢獻指南請參考 [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md)
+
+## 📚 文件目錄
+
+- **部署文件**: [docs/deployment/](docs/deployment/) - 包含完整的部署指南與檢查清單
+- **開發指南**: [docs/development/](docs/development/) - 包含貢獻指南與 AI Agent 協作指引
+- **變更記錄**: [docs/changelogs/](docs/changelogs/) - 各功能的變更歷史記錄
+- **使用者手冊**: [docs/user-manual.md](docs/user-manual.md) - 完整的使用者操作指南
+- **規格文件**: [specs/](specs/) - 詳細的功能規格與 API 定義
+
+更多文件請參考 [docs/README.md](docs/README.md)
 
 ## 📝 授權
 

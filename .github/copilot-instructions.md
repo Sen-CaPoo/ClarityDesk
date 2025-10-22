@@ -184,8 +184,12 @@ dotnet user-secrets set "LineLogin:ChannelSecret" "your-secret"
 - **架構設計**: `specs/001-customer-issue-tracker/spec.md` - User Stories 與 Acceptance Criteria
 - **資料模型**: `specs/001-customer-issue-tracker/data-model.md` - 完整的 ERD 與欄位定義
 - **服務合約**: `specs/001-customer-issue-tracker/contracts/README.md` - 所有服務介面與 DTO 定義
-- **部署指南**: `DEPLOYMENT.md` - IIS 部署完整流程與故障排除
-- **貢獻指南**: `CONTRIBUTING.md` - 程式碼風格、分支策略、PR 檢查清單
+- **部署指南**: `docs/deployment/DEPLOYMENT.md` - 完整部署流程與故障排除
+- **部署檢查清單**: `docs/deployment/IIS-DEPLOYMENT-CHECKLIST.md` - IIS 部署步驟與診斷
+- **貢獻指南**: `docs/development/CONTRIBUTING.md` - 程式碼風格、分支策略、PR 檢查清單
+- **AI 協作指引**: `docs/development/AGENTS.md` - 專案概覽與開發指令
+- **變更記錄**: `docs/changelogs/` - 各功能的變更歷史記錄
+- **使用者手冊**: `docs/user-manual.md` - 完整的使用者操作指南
 
 ## 新增功能指引
 
@@ -220,4 +224,4 @@ dotnet user-secrets set "LineLogin:ChannelSecret" "your-secret"
 
 ---
 
-**最後更新**: 2025-10-21 | **專案狀態**: Phase 1-4 實作完成,Phase 5 部分進行中
+**最後更新**: 2025-10-23 | **專案狀態**: Phase 1-4 實作完成,Phase 5 部分進行中 | **目錄結構**: 已整理並分類所有文件檔案
