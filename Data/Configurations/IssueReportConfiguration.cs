@@ -35,6 +35,12 @@ namespace ClarityDesk.Data.Configurations
                 .HasMaxLength(20)
                 .HasConversion<string>();
             
+            builder.Property(i => i.Source)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasConversion<string>()
+                .HasDefaultValue(Models.Enums.IssueReportSource.Web);
+            
             builder.Property(i => i.ReporterName)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -69,6 +75,7 @@ namespace ClarityDesk.Data.Configurations
             // Indexes
             builder.HasIndex(i => i.Status);
             builder.HasIndex(i => i.Priority);
+            builder.HasIndex(i => i.Source);
             builder.HasIndex(i => i.RecordDate);
             builder.HasIndex(i => i.AssignedUserId);
             builder.HasIndex(i => i.LastModifiedByUserId);

@@ -51,5 +51,12 @@ namespace ClarityDesk.Models.Entities
         /// 更新時間
         /// </summary>
         public DateTime UpdatedAt { get; set; }
+        
+        // 導覽屬性
+        
+        /// <summary>
+        /// LINE 帳號綁定 (一對一關係)
+        /// </summary>
+        public LineBinding? LineBinding { get; set; }
     }
 }

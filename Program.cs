@@ -42,6 +42,10 @@ namespace ClarityDesk
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // 設定 LINE Settings (用於 LINE 整合功能)
+            builder.Services.Configure<Infrastructure.Options.LineSettings>(
+                builder.Configuration.GetSection("LineSettings"));
+
             // 設定 LINE Login Options
             builder.Services.Configure<LineLoginOptions>(
                 builder.Configuration.GetSection("LineLogin"));

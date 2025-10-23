@@ -51,34 +51,34 @@
 
 ### 資料模型與 EF Core 配置
 
-- [ ] T007 [P] 建立列舉類別: `BindingStatus`, `ConversationStep`, `LineMessageType`, `MessageDirection`, `IssueReportSource` in `Models/Enums/`
-- [ ] T008 [P] 建立實體類別: `LineBinding` in `Models/Entities/LineBinding.cs`
-- [ ] T009 [P] 建立實體類別: `LineConversationSession` in `Models/Entities/LineConversationSession.cs`
-- [ ] T010 [P] 建立實體類別: `LineMessageLog` in `Models/Entities/LineMessageLog.cs`
-- [ ] T011 修改實體類別: 在 `IssueReport` 新增 `Source` 欄位 (`Models/Entities/IssueReport.cs`)
-- [ ] T012 [P] 建立 EF Core 配置: `LineBindingConfiguration` in `Data/Configurations/LineBindingConfiguration.cs`
-- [ ] T013 [P] 建立 EF Core 配置: `LineConversationSessionConfiguration` in `Data/Configurations/LineConversationSessionConfiguration.cs`
-- [ ] T014 [P] 建立 EF Core 配置: `LineMessageLogConfiguration` in `Data/Configurations/LineMessageLogConfiguration.cs`
-- [ ] T015 修改 EF Core 配置: 更新 `IssueReportConfiguration` 新增 Source 欄位配置 (`Data/Configurations/IssueReportConfiguration.cs`)
-- [ ] T016 修改 DbContext: 在 `ApplicationDbContext` 新增 `DbSet<LineBinding>`, `DbSet<LineConversationSession>`, `DbSet<LineMessageLog>` (`Data/ApplicationDbContext.cs`)
-- [ ] T017 建立 Migration: `dotnet ef migrations add AddLineIntegrationEntities`
-- [ ] T018 套用 Migration 至資料庫: `dotnet ef database update`
+- [X] T007 [P] 建立列舉類別: `BindingStatus`, `ConversationStep`, `LineMessageType`, `MessageDirection`, `IssueReportSource` in `Models/Enums/`
+- [X] T008 [P] 建立實體類別: `LineBinding` in `Models/Entities/LineBinding.cs`
+- [X] T009 [P] 建立實體類別: `LineConversationSession` in `Models/Entities/LineConversationSession.cs`
+- [X] T010 [P] 建立實體類別: `LineMessageLog` in `Models/Entities/LineMessageLog.cs`
+- [X] T011 修改實體類別: 在 `IssueReport` 新增 `Source` 欄位 (`Models/Entities/IssueReport.cs`)
+- [X] T012 [P] 建立 EF Core 配置: `LineBindingConfiguration` in `Data/Configurations/LineBindingConfiguration.cs`
+- [X] T013 [P] 建立 EF Core 配置: `LineConversationSessionConfiguration` in `Data/Configurations/LineConversationSessionConfiguration.cs`
+- [X] T014 [P] 建立 EF Core 配置: `LineMessageLogConfiguration` in `Data/Configurations/LineMessageLogConfiguration.cs`
+- [X] T015 修改 EF Core 配置: 更新 `IssueReportConfiguration` 新增 Source 欄位配置 (`Data/Configurations/IssueReportConfiguration.cs`)
+- [X] T016 修改 DbContext: 在 `ApplicationDbContext` 新增 `DbSet<LineBinding>`, `DbSet<LineConversationSession>`, `DbSet<LineMessageLog>` (`Data/ApplicationDbContext.cs`)
+- [X] T017 建立 Migration: `dotnet ef migrations add AddLineIntegrationEntities`
+- [X] T018 套用 Migration 至資料庫: `dotnet ef database update`
 
 ### DTO 與 Extension Methods
 
-- [ ] T019 [P] 建立 DTO: `LineBindingDto`, `CreateBindingRequest`, `PagedResult<T>` in `Models/DTOs/LineBindingDto.cs`
-- [ ] T020 [P] 建立 DTO: `LineMessageLogDto`, `QuickReplyOption` in `Models/DTOs/LineMessageDto.cs`
-- [ ] T021 [P] 建立 DTO: `LineConversationSessionDto`, `ConversationResponse`, `ValidationResult` in `Models/DTOs/LineConversationDto.cs`
-- [ ] T022 [P] 建立 Extension Methods: `LineBindingExtensions` (ToDto, ToEntity) in `Models/Extensions/LineBindingExtensions.cs`
-- [ ] T023 [P] 建立 Extension Methods: `LineMessageExtensions` in `Models/Extensions/LineMessageExtensions.cs`
-- [ ] T024 [P] 建立 Extension Methods: `LineConversationExtensions` in `Models/Extensions/LineConversationExtensions.cs`
+- [X] T019 [P] 建立 DTO: `LineBindingDto`, `CreateBindingRequest`, `PagedResult<T>` in `Models/DTOs/LineBindingDto.cs`
+- [X] T020 [P] 建立 DTO: `LineMessageLogDto`, `QuickReplyOption` in `Models/DTOs/LineMessageDto.cs`
+- [X] T021 [P] 建立 DTO: `LineConversationSessionDto`, `ConversationResponse`, `ValidationResult` in `Models/DTOs/LineConversationDto.cs`
+- [X] T022 [P] 建立 Extension Methods: `LineBindingExtensions` (ToDto, ToEntity) in `Models/Extensions/LineBindingExtensions.cs`
+- [X] T023 [P] 建立 Extension Methods: `LineMessageExtensions` in `Models/Extensions/LineMessageExtensions.cs`
+- [X] T024 [P] 建立 Extension Methods: `LineConversationExtensions` in `Models/Extensions/LineConversationExtensions.cs`
 
 ### 自訂例外與基礎服務介面
 
-- [ ] T025 [P] 建立自訂例外: `LineBindingException` in `Services/Exceptions/LineBindingException.cs`
-- [ ] T026 [P] 建立自訂例外: `LineApiException` in `Services/Exceptions/LineApiException.cs`
-- [ ] T027 建立強型別 Options 類別: `LineSettings` in `Infrastructure/Options/LineSettings.cs`
-- [ ] T028 在 `Program.cs` 註冊 LineSettings (`builder.Services.Configure<LineSettings>(...)`)
+- [X] T025 [P] 建立自訂例外: `LineBindingException` in `Services/Exceptions/LineBindingException.cs`
+- [X] T026 [P] 建立自訂例外: `LineApiException` in `Services/Exceptions/LineApiException.cs`
+- [X] T027 建立強型別 Options 類別: `LineSettings` in `Infrastructure/Options/LineSettings.cs`
+- [X] T028 在 `Program.cs` 註冊 LineSettings (`builder.Services.Configure<LineSettings>(...)`)
 
 **Checkpoint**: 基礎建設完成,所有 User Story 現在可以並行開始實作
 

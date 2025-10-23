@@ -38,6 +38,21 @@ namespace ClarityDesk.Data
         /// 單位處理人員
         /// </summary>
         public DbSet<DepartmentUser> DepartmentUsers { get; set; }
+        
+        /// <summary>
+        /// LINE 帳號綁定
+        /// </summary>
+        public DbSet<LineBinding> LineBindings { get; set; }
+        
+        /// <summary>
+        /// LINE 對話 Session
+        /// </summary>
+        public DbSet<LineConversationSession> LineConversationSessions { get; set; }
+        
+        /// <summary>
+        /// LINE 訊息日誌
+        /// </summary>
+        public DbSet<LineMessageLog> LineMessageLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -49,6 +64,9 @@ namespace ClarityDesk.Data
             modelBuilder.ApplyConfiguration(new IssueReportConfiguration());
             modelBuilder.ApplyConfiguration(new DepartmentAssignmentConfiguration());
             modelBuilder.ApplyConfiguration(new DepartmentUserConfiguration());
+            modelBuilder.ApplyConfiguration(new LineBindingConfiguration());
+            modelBuilder.ApplyConfiguration(new LineConversationSessionConfiguration());
+            modelBuilder.ApplyConfiguration(new LineMessageLogConfiguration());
         }
         
         /// <summary>
@@ -108,6 +126,29 @@ namespace ClarityDesk.Data
                     if (entry.State == EntityState.Added)
                     {
                         assignment.AssignedAt = DateTime.UtcNow;
+                    }
+                }
+                else if (entry.Entity is LineBinding lineBinding)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        lineBinding.CreatedAt = DateTime.UtcNow;
+                    }
+                    lineBinding.UpdatedAt = DateTime.UtcNow;
+                }
+                else if (entry.Entity is LineConversationSession session)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        session.CreatedAt = DateTime.UtcNow;
+                    }
+                    session.UpdatedAt = DateTime.UtcNow;
+                }
+                else if (entry.Entity is LineMessageLog messageLog)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        messageLog.SentAt = DateTime.UtcNow;
                     }
                 }
             }

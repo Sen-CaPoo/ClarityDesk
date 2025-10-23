@@ -63,6 +63,11 @@ namespace ClarityDesk.Models.Entities
         public User? AssignedUser { get; set; }
         
         /// <summary>
+        /// 回報單建立來源
+        /// </summary>
+        public IssueReportSource Source { get; set; } = IssueReportSource.Web;
+        
+        /// <summary>
         /// 建立時間
         /// </summary>
         public DateTime CreatedAt { get; set; }
