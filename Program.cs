@@ -30,6 +30,8 @@ namespace ClarityDesk
                 options.Conventions.AuthorizePage("/Admin/Departments/Index", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Create", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Edit", "Admin");
+                options.Conventions.AuthorizePage("/Admin/LineManagement/Index", "Admin");
+                options.Conventions.AuthorizePage("/Admin/LineManagement/Logs", "Admin");
                 
                 // 允許匿名訪問的頁面
                 options.Conventions.AllowAnonymousToPage("/Account/Login");

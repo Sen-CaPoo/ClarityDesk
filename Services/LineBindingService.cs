@@ -374,18 +374,29 @@ public class LineBindingService : ILineBindingService
         BindingStatus? status = null,
         int pageNumber = 1,
         int pageSize = 20,
+        string? searchKeyword = null,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            _logger.LogInformation("查詢 LINE 綁定列表: Status={Status}, PageNumber={PageNumber}, PageSize={PageSize}",
-                status, pageNumber, pageSize);
+            _logger.LogInformation("查詢 LINE 綁定列表: Status={Status}, PageNumber={PageNumber}, PageSize={PageSize}, Search={Search}",
+                status, pageNumber, pageSize, searchKeyword);
 
-            var query = _context.LineBindings.AsNoTracking();
+            var query = _context.LineBindings
+                .Include(b => b.User)
+                .AsNoTracking();
 
             if (status.HasValue)
             {
                 query = query.Where(b => b.BindingStatus == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchKeyword))
+            {
+                var keyword = searchKeyword.Trim();
+                query = query.Where(b =>
+                    (b.DisplayName != null && b.DisplayName.Contains(keyword)) ||
+                    (b.User != null && b.User.DisplayName.Contains(keyword)));
             }
 
             var totalCount = await query.CountAsync(cancellationToken);
@@ -403,6 +414,43 @@ public class LineBindingService : ILineBindingService
         catch (Exception ex)
         {
             _logger.LogError(ex, "查詢 LINE 綁定列表時發生錯誤");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// 依綁定 ID 解除綁定 (管理員功能)
+    /// </summary>
+    public async Task<bool> UnbindByIdAsync(int bindingId, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            _logger.LogInformation("管理員解除綁定: BindingId={BindingId}", bindingId);
+
+            var binding = await _context.LineBindings
+                .FirstOrDefaultAsync(b => b.Id == bindingId, cancellationToken);
+
+            if (binding == null)
+            {
+                _logger.LogWarning("綁定不存在: BindingId={BindingId}", bindingId);
+                return false;
+            }
+
+            binding.BindingStatus = BindingStatus.Unbound;
+            binding.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            ClearBindingCache(binding.UserId, binding.LineUserId);
+
+            _logger.LogInformation("管理員成功解除綁定: BindingId={BindingId}, UserId={UserId}",
+                bindingId, binding.UserId);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "管理員解除綁定時發生錯誤: BindingId={BindingId}", bindingId);
             throw;
         }
     }

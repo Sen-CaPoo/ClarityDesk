@@ -1,0 +1,313 @@
+@page
+@model ClarityDesk.Pages.Admin.LineManagement.LogsModel
+@{
+    ViewData["Title"] = "LINE 訊息日誌";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-chat-left-text me-2"></i>LINE 訊息日誌</h2>
+            <p class="text-muted">查看所有 LINE 訊息發送與接收記錄</p>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="關閉"></button>
+        </div>
+    }
+
+    <!-- 篩選與搜尋 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="lineUserIdFilter" class="form-label">LINE User ID</label>
+                    <input type="text" class="form-control" id="lineUserIdFilter" name="lineUserIdFilter" 
+                           value="@Model.LineUserIdFilter" placeholder="輸入 LINE User ID">
+                </div>
+                <div class="col-md-2">
+                    <label for="directionFilter" class="form-label">訊息方向</label>
+                    <select class="form-select" id="directionFilter" name="directionFilter">
+                        @foreach (var option in Model.DirectionOptions)
+                        {
+                            <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="successFilter" class="form-label">發送狀態</label>
+                    <select class="form-select" id="successFilter" name="successFilter">
+                        @foreach (var option in Model.StatusOptions)
+                        {
+                            <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="startDate" class="form-label">起始日期</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" 
+                           value="@Model.StartDate?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-2">
+                    <label for="endDate" class="form-label">結束日期</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" 
+                           value="@Model.EndDate?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+            <div class="row mt-3">
+                <div class="col-md-2">
+                    <label for="pageSize" class="form-label">每頁筆數</label>
+                    <select class="form-select" id="pageSize" name="pageSize" onchange="this.form.submit()">
+                        <option value="20" selected="@(Model.PageSize == 20)">20</option>
+                        <option value="50" selected="@(Model.PageSize == 50)">50</option>
+                        <option value="100" selected="@(Model.PageSize == 100)">100</option>
+                        <option value="200" selected="@(Model.PageSize == 200)">200</option>
+                    </select>
+                </div>
+                <div class="col-md-10 d-flex align-items-end">
+                    <a href="@Url.Page("/Admin/LineManagement/Logs")" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>重設篩選
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 統計資訊 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">總日誌數</h5>
+                    <p class="display-6 text-primary">@Model.MessageLogs.TotalCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">成功訊息</h5>
+                    <p class="display-6 text-success">
+                        @Model.MessageLogs.Items.Count(l => l.IsSuccess)
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">失敗訊息</h5>
+                    <p class="display-6 text-danger">
+                        @Model.MessageLogs.Items.Count(l => !l.IsSuccess)
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">當前頁面</h5>
+                    <p class="display-6 text-info">@Model.MessageLogs.CurrentPage / @Model.MessageLogs.TotalPages</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 訊息日誌列表 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">訊息日誌</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.MessageLogs.Items.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 15%;">發送時間</th>
+                                <th style="width: 15%;">LINE User ID</th>
+                                <th style="width: 8%;">訊息類型</th>
+                                <th style="width: 8%;">方向</th>
+                                <th style="width: 8%;">狀態</th>
+                                <th style="width: 28%;">內容摘要</th>
+                                <th style="width: 10%;">錯誤訊息</th>
+                                <th style="width: 8%;">回報單</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.MessageLogs.Items)
+                            {
+                                <tr class="@(!log.IsSuccess ? "table-danger" : "")">
+                                    <td>
+                                        <small>@log.SentAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</small>
+                                    </td>
+                                    <td>
+                                        <small class="font-monospace">
+                                            @if (log.LineUserId.Length > 15)
+                                            {
+                                                <span title="@log.LineUserId">@log.LineUserId.Substring(0, 15)...</span>
+                                            }
+                                            else
+                                            {
+                                                @log.LineUserId
+                                            }
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@log.MessageType</span>
+                                    </td>
+                                    <td>
+                                        @if (log.Direction == ClarityDesk.Models.Enums.MessageDirection.Outbound)
+                                        {
+                                            <span class="badge bg-primary">
+                                                <i class="bi bi-arrow-up-right"></i> 發送
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-arrow-down-left"></i> 接收
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (log.IsSuccess)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> 成功
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> 失敗
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small class="text-truncate d-inline-block" style="max-width: 300px;" title="@log.Content">
+                                            @if (log.Content.Length > 50)
+                                            {
+                                                @(log.Content.Substring(0, 50) + "...")
+                                            }
+                                            else
+                                            {
+                                                @log.Content
+                                            }
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(log.ErrorMessage))
+                                        {
+                                            <small class="text-danger" title="@log.ErrorCode - @log.ErrorMessage">
+                                                @if (log.ErrorMessage.Length > 20)
+                                                {
+                                                    @(log.ErrorMessage.Substring(0, 20) + "...")
+                                                }
+                                                else
+                                                {
+                                                    @log.ErrorMessage
+                                                }
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">-</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (log.IssueReportId.HasValue)
+                                        {
+                                            <a href="/Issues/Details?id=@log.IssueReportId" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                #@log.IssueReportId
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">-</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <p class="text-muted mt-3">沒有找到任何訊息日誌</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 分頁 -->
+    @if (Model.MessageLogs.TotalPages > 1)
+    {
+        <nav aria-label="分頁導航" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <!-- 上一頁 -->
+                <li class="page-item @(Model.MessageLogs.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link" 
+                       href="?PageNumber=@(Model.PageNumber - 1)&PageSize=@Model.PageSize&LineUserIdFilter=@Model.LineUserIdFilter&DirectionFilter=@Model.DirectionFilter&SuccessFilter=@Model.SuccessFilter&StartDate=@Model.StartDate?.ToString("yyyy-MM-dd")&EndDate=@Model.EndDate?.ToString("yyyy-MM-dd")">
+                        上一頁
+                    </a>
+                </li>
+
+                <!-- 頁碼 -->
+                @for (int i = 1; i <= Model.MessageLogs.TotalPages; i++)
+                {
+                    if (i == 1 || i == Model.MessageLogs.TotalPages || 
+                        (i >= Model.PageNumber - 2 && i <= Model.PageNumber + 2))
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" 
+                               href="?PageNumber=@i&PageSize=@Model.PageSize&LineUserIdFilter=@Model.LineUserIdFilter&DirectionFilter=@Model.DirectionFilter&SuccessFilter=@Model.SuccessFilter&StartDate=@Model.StartDate?.ToString("yyyy-MM-dd")&EndDate=@Model.EndDate?.ToString("yyyy-MM-dd")">
+                                @i
+                            </a>
+                        </li>
+                    }
+                    else if (i == Model.PageNumber - 3 || i == Model.PageNumber + 3)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+
+                <!-- 下一頁 -->
+                <li class="page-item @(Model.MessageLogs.HasNextPage ? "" : "disabled")">
+                    <a class="page-link" 
+                       href="?PageNumber=@(Model.PageNumber + 1)&PageSize=@Model.PageSize&LineUserIdFilter=@Model.LineUserIdFilter&DirectionFilter=@Model.DirectionFilter&SuccessFilter=@Model.SuccessFilter&StartDate=@Model.StartDate?.ToString("yyyy-MM-dd")&EndDate=@Model.EndDate?.ToString("yyyy-MM-dd")">
+                        下一頁
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // 自動消失提示訊息
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+}

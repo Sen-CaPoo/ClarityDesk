@@ -2,6 +2,7 @@ using ClarityDesk.Data;
 using ClarityDesk.Models.DTOs;
 using ClarityDesk.Models.Entities;
 using ClarityDesk.Models.Enums;
+using ClarityDesk.Models.Extensions;
 using ClarityDesk.Services.Interfaces;
 using Line.Messaging;
 using Line.Messaging.Webhooks;
@@ -375,6 +376,70 @@ namespace ClarityDesk.Services
 
             _context.LineMessageLogs.Add(entity);
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<PagedResult<LineMessageLogDto>> GetMessageLogsAsync(
+            string? lineUserId = null,
+            MessageDirection? direction = null,
+            bool? isSuccess = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int pageNumber = 1,
+            int pageSize = 50,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                _logger.LogInformation("查詢 LINE 訊息日誌: LineUserId={LineUserId}, Direction={Direction}, IsSuccess={IsSuccess}, StartDate={StartDate}, EndDate={EndDate}, Page={Page}",
+                    lineUserId, direction, isSuccess, startDate, endDate, pageNumber);
+
+                var query = _context.LineMessageLogs.AsNoTracking();
+
+                // 篩選條件
+                if (!string.IsNullOrWhiteSpace(lineUserId))
+                {
+                    query = query.Where(l => l.LineUserId == lineUserId);
+                }
+
+                if (direction.HasValue)
+                {
+                    query = query.Where(l => l.Direction == direction.Value);
+                }
+
+                if (isSuccess.HasValue)
+                {
+                    query = query.Where(l => l.IsSuccess == isSuccess.Value);
+                }
+
+                if (startDate.HasValue)
+                {
+                    query = query.Where(l => l.SentAt >= startDate.Value);
+                }
+
+                if (endDate.HasValue)
+                {
+                    // 包含整天，所以加上一天
+                    var endOfDay = endDate.Value.Date.AddDays(1);
+                    query = query.Where(l => l.SentAt < endOfDay);
+                }
+
+                var totalCount = await query.CountAsync(cancellationToken);
+
+                var logs = await query
+                    .OrderByDescending(l => l.SentAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync(cancellationToken);
+
+                var dtos = logs.Select(l => l.ToDto()).ToList();
+
+                return PagedResult<LineMessageLogDto>.Create(dtos, totalCount, pageNumber, pageSize);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "查詢 LINE 訊息日誌時發生錯誤");
+                throw;
+            }
         }
 
         private async Task LogSuccessfulMessageAsync(string lineUserId, int? issueReportId, string content)

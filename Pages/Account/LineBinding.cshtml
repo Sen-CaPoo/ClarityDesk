@@ -74,7 +74,16 @@
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label text-muted small">最後互動時間</label>
-                                        <div class="fw-semibold">@Model.Binding.LastInteractedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                                        <div class="fw-semibold">
+                                            @if (Model.Binding.LastInteractedAt.HasValue)
+                                            {
+                                                @Model.Binding.LastInteractedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                            }
+                                            else
+                                            {
+                                                <text>尚無互動記錄</text>
+                                            }
+                                        </div>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label text-muted small">綁定狀態</label>

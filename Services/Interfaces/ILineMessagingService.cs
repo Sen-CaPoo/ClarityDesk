@@ -79,5 +79,27 @@ namespace ClarityDesk.Services.Interfaces
         Task LogMessageAsync(
             LineMessageLogDto log,
             CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 查詢訊息日誌 (管理員功能)
+        /// </summary>
+        /// <param name="lineUserId">篩選 LINE User ID (可選)</param>
+        /// <param name="direction">篩選訊息方向 (可選)</param>
+        /// <param name="isSuccess">篩選發送狀態 (可選)</param>
+        /// <param name="startDate">起始日期 (可選)</param>
+        /// <param name="endDate">結束日期 (可選)</param>
+        /// <param name="pageNumber">頁碼 (從 1 開始)</param>
+        /// <param name="pageSize">每頁筆數</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>分頁結果</returns>
+        Task<PagedResult<LineMessageLogDto>> GetMessageLogsAsync(
+            string? lineUserId = null,
+            ClarityDesk.Models.Enums.MessageDirection? direction = null,
+            bool? isSuccess = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            int pageNumber = 1,
+            int pageSize = 50,
+            CancellationToken cancellationToken = default);
     }
 }

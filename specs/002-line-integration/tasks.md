@@ -273,12 +273,12 @@
 
 **估計時間**: 6-8 小時
 
-- [ ] T125 [P] 建立 PageModel: `Index.cshtml.cs` in `Pages/Admin/LineManagement/Index.cshtml.cs`
-- [ ] T126 [P] 建立 View: `Index.cshtml` in `Pages/Admin/LineManagement/Index.cshtml` (顯示綁定列表)
-- [ ] T127 [P] 建立 PageModel: `Logs.cshtml.cs` in `Pages/Admin/LineManagement/Logs.cshtml.cs`
-- [ ] T128 [P] 建立 View: `Logs.cshtml` in `Pages/Admin/LineManagement/Logs.cshtml` (顯示訊息日誌)
-- [ ] T129 實作分頁與篩選邏輯 (狀態、日期範圍)
-- [ ] T130 在 `Program.cs` 設定授權: `options.Conventions.AuthorizePage("/Admin/LineManagement/Index", "Admin")`
+- [X] T125 [P] 建立 PageModel: `Index.cshtml.cs` in `Pages/Admin/LineManagement/Index.cshtml.cs`
+- [X] T126 [P] 建立 View: `Index.cshtml` in `Pages/Admin/LineManagement/Index.cshtml` (顯示綁定列表)
+- [X] T127 [P] 建立 PageModel: `Logs.cshtml.cs` in `Pages/Admin/LineManagement/Logs.cshtml.cs`
+- [X] T128 [P] 建立 View: `Logs.cshtml` in `Pages/Admin/LineManagement/Logs.cshtml` (顯示訊息日誌)
+- [X] T129 實作分頁與篩選邏輯 (狀態、日期範圍)
+- [X] T130 在 `Program.cs` 設定授權: `options.Conventions.AuthorizePage("/Admin/LineManagement/Index", "Admin")`
 
 ---
 

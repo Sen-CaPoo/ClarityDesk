@@ -100,11 +100,23 @@ public interface ILineBindingService
     /// <param name="status">篩選狀態 (可選,null 表示全部)</param>
     /// <param name="pageNumber">頁碼 (從 1 開始)</param>
     /// <param name="pageSize">每頁筆數</param>
+    /// <param name="searchKeyword">搜尋關鍵字 (使用者名稱或 LINE 顯示名稱)</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>分頁結果</returns>
     Task<PagedResult<LineBindingDto>> GetAllBindingsAsync(
         BindingStatus? status = null,
         int pageNumber = 1,
         int pageSize = 20,
+        string? searchKeyword = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 依綁定 ID 解除綁定 (管理員功能)
+    /// </summary>
+    /// <param name="bindingId">綁定記錄 ID</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>true: 成功解除; false: 綁定不存在</returns>
+    Task<bool> UnbindByIdAsync(
+        int bindingId,
         CancellationToken cancellationToken = default);
 }

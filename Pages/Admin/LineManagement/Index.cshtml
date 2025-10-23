@@ -1,0 +1,252 @@
+@page
+@model ClarityDesk.Pages.Admin.LineManagement.IndexModel
+@{
+    ViewData["Title"] = "LINE 綁定管理";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-line me-2"></i>LINE 綁定管理</h2>
+            <p class="text-muted">管理所有使用者的 LINE 帳號綁定狀態</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="關閉"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="關閉"></button>
+        </div>
+    }
+
+    <!-- 篩選與搜尋 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="searchKeyword" class="form-label">搜尋關鍵字</label>
+                    <input type="text" class="form-control" id="searchKeyword" name="searchKeyword" 
+                           value="@Model.SearchKeyword" placeholder="使用者名稱或 LINE 顯示名稱">
+                </div>
+                <div class="col-md-3">
+                    <label for="statusFilter" class="form-label">綁定狀態</label>
+                    <select class="form-select" id="statusFilter" name="statusFilter">
+                        @foreach (var option in Model.StatusOptions)
+                        {
+                            <option value="@option.Value" selected="@option.Selected">@option.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="pageSize" class="form-label">每頁筆數</label>
+                    <select class="form-select" id="pageSize" name="pageSize">
+                        <option value="10" selected="@(Model.PageSize == 10)">10</option>
+                        <option value="20" selected="@(Model.PageSize == 20)">20</option>
+                        <option value="50" selected="@(Model.PageSize == 50)">50</option>
+                        <option value="100" selected="@(Model.PageSize == 100)">100</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i>查詢
+                    </button>
+                    <a href="@Url.Page("/Admin/LineManagement/Index")" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>重設
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 統計資訊 -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">總綁定數</h5>
+                    <p class="display-6 text-primary">@Model.Bindings.TotalCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">當前頁面</h5>
+                    <p class="display-6 text-info">@Model.Bindings.CurrentPage / @Model.Bindings.TotalPages</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">顯示筆數</h5>
+                    <p class="display-6 text-secondary">@Model.Bindings.Items.Count</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 綁定列表 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">綁定列表</h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Bindings.Items.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>使用者名稱</th>
+                                <th>LINE 顯示名稱</th>
+                                <th>LINE User ID</th>
+                                <th>綁定狀態</th>
+                                <th>綁定時間</th>
+                                <th>最後互動</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var binding in Model.Bindings.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(binding.PictureUrl))
+                                        {
+                                            <img src="@binding.PictureUrl" alt="頭像" class="rounded-circle me-2" 
+                                                 style="width: 32px; height: 32px;">
+                                        }
+                                        @binding.DisplayName
+                                    </td>
+                                    <td>@binding.LineDisplayName</td>
+                                    <td>
+                                        <small class="font-monospace">@binding.LineUserId</small>
+                                    </td>
+                                    <td>
+                                        @switch (binding.BindingStatus)
+                                        {
+                                            case ClarityDesk.Models.Enums.BindingStatus.Active:
+                                                <span class="badge bg-success">已綁定</span>
+                                                break;
+                                            case ClarityDesk.Models.Enums.BindingStatus.Blocked:
+                                                <span class="badge bg-danger">已封鎖</span>
+                                                break;
+                                            case ClarityDesk.Models.Enums.BindingStatus.Unbound:
+                                                <span class="badge bg-secondary">已解綁</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@binding.BoundAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        @if (binding.LastInteractedAt.HasValue)
+                                        {
+                                            <small>@binding.LastInteractedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-muted">無</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (binding.BindingStatus == ClarityDesk.Models.Enums.BindingStatus.Active)
+                                        {
+                                            <form method="post" asp-page-handler="Unbind" 
+                                                  onsubmit="return confirm('確定要解除此綁定嗎？');" 
+                                                  class="d-inline">
+                                                <input type="hidden" name="bindingId" value="@binding.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-circle me-1"></i>解除綁定
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <p class="text-muted mt-3">沒有找到任何綁定記錄</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 分頁 -->
+    @if (Model.Bindings.TotalPages > 1)
+    {
+        <nav aria-label="分頁導航" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <!-- 上一頁 -->
+                <li class="page-item @(Model.Bindings.HasPreviousPage ? "" : "disabled")">
+                    <a class="page-link" 
+                       href="?PageNumber=@(Model.PageNumber - 1)&PageSize=@Model.PageSize&StatusFilter=@Model.StatusFilter&SearchKeyword=@Model.SearchKeyword">
+                        上一頁
+                    </a>
+                </li>
+
+                <!-- 頁碼 -->
+                @for (int i = 1; i <= Model.Bindings.TotalPages; i++)
+                {
+                    if (i == 1 || i == Model.Bindings.TotalPages || 
+                        (i >= Model.PageNumber - 2 && i <= Model.PageNumber + 2))
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" 
+                               href="?PageNumber=@i&PageSize=@Model.PageSize&StatusFilter=@Model.StatusFilter&SearchKeyword=@Model.SearchKeyword">
+                                @i
+                            </a>
+                        </li>
+                    }
+                    else if (i == Model.PageNumber - 3 || i == Model.PageNumber + 3)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+
+                <!-- 下一頁 -->
+                <li class="page-item @(Model.Bindings.HasNextPage ? "" : "disabled")">
+                    <a class="page-link" 
+                       href="?PageNumber=@(Model.PageNumber + 1)&PageSize=@Model.PageSize&StatusFilter=@Model.StatusFilter&SearchKeyword=@Model.SearchKeyword">
+                        下一頁
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // 自動消失提示訊息
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+}

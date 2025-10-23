@@ -17,8 +17,9 @@ public static class LineBindingExtensions
         {
             Id = entity.Id,
             UserId = entity.UserId,
+            DisplayName = entity.User?.DisplayName ?? string.Empty,
             LineUserId = entity.LineUserId,
-            DisplayName = entity.DisplayName,
+            LineDisplayName = entity.DisplayName,
             PictureUrl = entity.PictureUrl,
             BindingStatus = entity.BindingStatus,
             BoundAt = entity.BoundAt,
