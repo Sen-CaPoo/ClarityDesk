@@ -11,9 +11,8 @@ public record LineConversationSessionDto
     public string LineUserId { get; init; } = string.Empty;
     public int UserId { get; init; }
     public ConversationStep CurrentStep { get; init; }
-    public string SessionData { get; init; } = "{}";
+    public Dictionary<string, object> SessionData { get; init; } = new();
     public DateTime CreatedAt { get; init; }
-    public DateTime UpdatedAt { get; init; }
     public DateTime ExpiresAt { get; init; }
 }
 
@@ -22,24 +21,16 @@ public record LineConversationSessionDto
 /// </summary>
 public record ConversationResponse
 {
-    public string MessageText { get; init; } = string.Empty;
+    public bool IsValid { get; init; }
+    public string Message { get; init; } = string.Empty;
+    public ConversationStep? NextStep { get; init; }
     public IEnumerable<QuickReplyOption>? QuickReplyOptions { get; init; }
-    public ConversationStep NextStep { get; init; }
-    public bool IsComplete { get; init; }
-    public int? CreatedIssueId { get; init; }
 }
 
 /// <summary>
 /// 驗證結果 DTO
 /// </summary>
-public record ValidationResult
-{
-    public bool IsValid { get; init; }
-    public string? ErrorMessage { get; init; }
-    
-    public static ValidationResult Valid() => new() { IsValid = true };
-    public static ValidationResult Invalid(string errorMessage) => new() { IsValid = false, ErrorMessage = errorMessage };
-}
+public record ValidationResult(bool IsValid, string? ErrorMessage = null);
 
 /// <summary>
 /// Session 資料結構 (對應 SessionData JSON)

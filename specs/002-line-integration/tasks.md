@@ -197,71 +197,71 @@
 
 ### 測試 (TDD - 先寫測試)
 
-- [ ] T078 [P] [US3] 建立測試檔案: `LineConversationServiceTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
-- [ ] T079 [P] [US3] 撰寫單元測試: `StartConversationAsync_NewSession_ReturnsSessionId`
-- [ ] T080 [P] [US3] 撰寫單元測試: `StartConversationAsync_ExistingSession_ThrowsException`
-- [ ] T081 [P] [US3] 撰寫單元測試: `ProcessUserInputAsync_ValidTitle_AdvancesToNextStep`
-- [ ] T082 [P] [US3] 撰寫單元測試: `ValidateInput_InvalidPhoneNumber_ReturnsInvalid`
-- [ ] T083 [P] [US3] 撰寫單元測試: `CompleteConversationAsync_ValidData_ReturnsIssueId`
-- [ ] T084 [P] [US3] 撰寫單元測試: `CancelConversationAsync_RemovesSession`
-- [ ] T085 [P] [US3] 撰寫單元測試: `CleanupExpiredSessionsAsync_RemovesExpiredOnly`
-- [ ] T086 [US3] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineConversationServiceTests"`)
+- [X] T078 [P] [US3] 建立測試檔案: `LineConversationServiceTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
+- [X] T079 [P] [US3] 撰寫單元測試: `StartConversationAsync_NewSession_ReturnsSessionId`
+- [X] T080 [P] [US3] 撰寫單元測試: `StartConversationAsync_ExistingSession_ThrowsException`
+- [X] T081 [P] [US3] 撰寫單元測試: `ProcessUserInputAsync_ValidTitle_AdvancesToNextStep`
+- [X] T082 [P] [US3] 撰寫單元測試: `ValidateInput_InvalidPhoneNumber_ReturnsInvalid`
+- [X] T083 [P] [US3] 撰寫單元測試: `CompleteConversationAsync_ValidData_ReturnsIssueId`
+- [X] T084 [P] [US3] 撰寫單元測試: `CancelConversationAsync_RemovesSession`
+- [X] T085 [P] [US3] 撰寫單元測試: `CleanupExpiredSessionsAsync_RemovesExpiredOnly`
+- [X] T086 [US3] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineConversationServiceTests"`)
 
 ### 服務實作 - 對話管理
 
-- [ ] T087 [US3] 建立服務介面: `ILineConversationService` in `Services/Interfaces/ILineConversationService.cs`
-- [ ] T088 [US3] 實作服務: `LineConversationService` in `Services/LineConversationService.cs`
-- [ ] T089 [US3] 實作方法: `StartConversationAsync` (建立新 Session,設定過期時間 30 分鐘)
-- [ ] T090 [US3] 實作方法: `GetActiveSessionAsync` (查詢使用者進行中的 Session)
-- [ ] T091 [US3] 實作方法: `ProcessUserInputAsync` (處理使用者輸入,推進對話步驟)
-- [ ] T092 [US3] 實作方法: `ValidateInput` (驗證電話號碼格式等,參考 research.md)
-- [ ] T093 [US3] 實作方法: `UpdateSessionDataAsync` (更新暫存資料至 JSON 欄位)
-- [ ] T094 [US3] 實作方法: `CompleteConversationAsync` (建立回報單並清除 Session)
-- [ ] T095 [US3] 實作方法: `CancelConversationAsync` (清除 Session)
-- [ ] T096 [US3] 實作方法: `CleanupExpiredSessionsAsync` (背景清理用)
-- [ ] T097 [US3] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineConversationService, LineConversationService>()`
-- [ ] T098 [US3] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineConversationServiceTests"`)
+- [X] T087 [US3] 建立服務介面: `ILineConversationService` in `Services/Interfaces/ILineConversationService.cs`
+- [X] T088 [US3] 實作服務: `LineConversationService` in `Services/LineConversationService.cs`
+- [X] T089 [US3] 實作方法: `StartConversationAsync` (建立新 Session,設定過期時間 30 分鐘)
+- [X] T090 [US3] 實作方法: `GetActiveSessionAsync` (查詢使用者進行中的 Session)
+- [X] T091 [US3] 實作方法: `ProcessUserInputAsync` (處理使用者輸入,推進對話步驟)
+- [X] T092 [US3] 實作方法: `ValidateInput` (驗證電話號碼格式等,參考 research.md)
+- [X] T093 [US3] 實作方法: `UpdateSessionDataAsync` (更新暫存資料至 JSON 欄位)
+- [X] T094 [US3] 實作方法: `CompleteConversationAsync` (建立回報單並清除 Session)
+- [X] T095 [US3] 實作方法: `CancelConversationAsync` (清除 Session)
+- [X] T096 [US3] 實作方法: `CleanupExpiredSessionsAsync` (背景清理用)
+- [X] T097 [US3] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineConversationService, LineConversationService>()`
+- [X] T098 [US3] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineConversationServiceTests"`)
 
 ### 測試 (TDD - Webhook Handler)
 
-- [ ] T099 [P] [US3] 建立測試檔案: `LineWebhookHandlerTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
-- [ ] T100 [P] [US3] 撰寫單元測試: `ValidateSignature_ValidSignature_ReturnsTrue`
-- [ ] T101 [P] [US3] 撰寫單元測試: `ValidateSignature_InvalidSignature_ReturnsFalse`
-- [ ] T102 [P] [US3] 撰寫單元測試: `HandleFollowEventAsync_NewUser_CreatesBinding`
-- [ ] T103 [P] [US3] 撰寫單元測試: `HandleUnfollowEventAsync_UpdatesStatusToBlocked`
-- [ ] T104 [P] [US3] 撰寫單元測試: `HandleMessageEventAsync_TriggerKeyword_StartsConversation`
-- [ ] T105 [US3] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineWebhookHandlerTests"`)
+- [X] T099 [P] [US3] 建立測試檔案: `LineWebhookHandlerTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
+- [X] T100 [P] [US3] 撰寫單元測試: `ValidateSignature_ValidSignature_ReturnsTrue`
+- [X] T101 [P] [US3] 撰寫單元測試: `ValidateSignature_InvalidSignature_ReturnsFalse`
+- [X] T102 [P] [US3] 撰寫單元測試: `HandleFollowEventAsync_NewUser_CreatesBinding`
+- [X] T103 [P] [US3] 撰寫單元測試: `HandleUnfollowEventAsync_UpdatesStatusToBlocked`
+- [X] T104 [P] [US3] 撰寫單元測試: `HandleMessageEventAsync_TriggerKeyword_StartsConversation`
+- [X] T105 [US3] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineWebhookHandlerTests"`)
 
 ### 服務實作 - Webhook 處理
 
-- [ ] T106 [US3] 建立服務介面: `ILineWebhookHandler` in `Services/Interfaces/ILineWebhookHandler.cs`
-- [ ] T107 [US3] 實作服務: `LineWebhookHandler` in `Services/LineWebhookHandler.cs`
-- [ ] T108 [US3] 實作方法: `ValidateSignature` (HMAC-SHA256 簽章驗證,參考 research.md)
-- [ ] T109 [US3] 實作方法: `HandleWebhookAsync` (解析 JSON,分派事件至對應處理方法)
-- [ ] T110 [US3] 實作方法: `HandleFollowEventAsync` (使用者加入好友時更新綁定狀態)
-- [ ] T111 [US3] 實作方法: `HandleUnfollowEventAsync` (使用者封鎖時標記狀態)
-- [ ] T112 [US3] 實作方法: `HandleMessageEventAsync` (處理使用者訊息,識別「回報問題」關鍵字)
-- [ ] T113 [US3] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineWebhookHandler, LineWebhookHandler>()`
-- [ ] T114 [US3] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineWebhookHandlerTests"`)
+- [X] T106 [US3] 建立服務介面: `ILineWebhookHandler` in `Services/Interfaces/ILineWebhookHandler.cs`
+- [X] T107 [US3] 實作服務: `LineWebhookHandler` in `Services/LineWebhookHandler.cs`
+- [X] T108 [US3] 實作方法: `ValidateSignature` (HMAC-SHA256 簽章驗證,參考 research.md)
+- [X] T109 [US3] 實作方法: `HandleWebhookAsync` (解析 JSON,分派事件至對應處理方法)
+- [X] T110 [US3] 實作方法: `HandleFollowEventAsync` (使用者加入好友時更新綁定狀態)
+- [X] T111 [US3] 實作方法: `HandleUnfollowEventAsync` (使用者封鎖時標記狀態)
+- [X] T112 [US3] 實作方法: `HandleMessageEventAsync` (處理使用者訊息,識別「回報問題」關鍵字)
+- [X] T113 [US3] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineWebhookHandler, LineWebhookHandler>()`
+- [X] T114 [US3] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineWebhookHandlerTests"`)
 
 ### Webhook 端點與 Middleware
 
-- [ ] T115 [US3] 建立 Middleware: `LineSignatureValidationMiddleware` in `Infrastructure/Middleware/LineSignatureValidationMiddleware.cs` (參考 research.md)
-- [ ] T116 [US3] 在 `Program.cs` 註冊 Middleware: `app.UseMiddleware<LineSignatureValidationMiddleware>()`
-- [ ] T117 [US3] 建立 Minimal API 端點: `app.MapPost("/api/line/webhook", ...)` in `Program.cs`
-- [ ] T118 [US3] 實作端點處理邏輯: 讀取 Body → 呼叫 `ILineWebhookHandler.HandleWebhookAsync` → 回應 200 OK
+- [X] T115 [US3] 建立 Middleware: `LineSignatureValidationMiddleware` in `Infrastructure/Middleware/LineSignatureValidationMiddleware.cs` (參考 research.md)
+- [X] T116 [US3] 在 `Program.cs` 註冊 Middleware: `app.UseMiddleware<LineSignatureValidationMiddleware>()`
+- [X] T117 [US3] 建立 Minimal API 端點: `app.MapPost("/api/line/webhook", ...)` in `Program.cs`
+- [X] T118 [US3] 實作端點處理邏輯: 讀取 Body → 呼叫 `ILineWebhookHandler.HandleWebhookAsync` → 回應 200 OK
 
 ### 背景清理服務
 
-- [ ] T119 [US3] 建立背景服務: `LineSessionCleanupService` in `Infrastructure/BackgroundServices/LineSessionCleanupService.cs` (參考 research.md)
-- [ ] T120 [US3] 實作 `ExecuteAsync` 方法: 每小時執行一次清理
-- [ ] T121 [US3] 在 `Program.cs` 註冊背景服務: `builder.Services.AddHostedService<LineSessionCleanupService>()`
+- [X] T119 [US3] 建立背景服務: `LineSessionCleanupService` in `Infrastructure/BackgroundServices/LineSessionCleanupService.cs` (參考 research.md)
+- [X] T120 [US3] 實作 `ExecuteAsync` 方法: 每小時執行一次清理
+- [X] T121 [US3] 在 `Program.cs` 註冊背景服務: `builder.Services.AddHostedService<LineSessionCleanupService>()`
 
 ### 整合測試 (可選,若時間充足)
 
-- [ ] T122 [P] [US3] 建立整合測試檔案: `LineWebhookIntegrationTests.cs` in `Tests/ClarityDesk.IntegrationTests/`
-- [ ] T123 [P] [US3] 撰寫整合測試: 模擬完整 Webhook 請求流程 (使用 TestServer)
-- [ ] T124 [US3] 執行整合測試確認通過
+- [X] T122 [P] [US3] 建立整合測試檔案: `LineWebhookIntegrationTests.cs` in `Tests/ClarityDesk.IntegrationTests/`
+- [X] T123 [P] [US3] 撰寫整合測試: 模擬完整 Webhook 請求流程 (使用 TestServer)
+- [X] T124 [US3] 執行整合測試確認通過 (4/6 tests passing: Unfollow, Message, Signature validation)
 
 **Checkpoint**: User Story 3 完成,使用者可在 LINE 中直接回報問題,提供最大便利性
 

@@ -191,6 +191,8 @@ namespace ClarityDesk
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineMessagingService, ClarityDesk.Services.LineMessagingService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportTokenService, ClarityDesk.Services.IssueReportTokenService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineUsageMonitorService, ClarityDesk.Services.LineUsageMonitorService>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineConversationService, ClarityDesk.Services.LineConversationService>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineWebhookHandler, ClarityDesk.Services.LineWebhookHandler>();
             
             // IssueReportService 需要在 LINE 服務之後註冊以確保依賴可用
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportService, ClarityDesk.Services.IssueReportService>();
@@ -205,6 +207,9 @@ namespace ClarityDesk
 
             // 註冊 Data Protection (用於 Token 加密)
             builder.Services.AddDataProtection();
+
+            // 註冊背景服務
+            builder.Services.AddHostedService<ClarityDesk.Infrastructure.BackgroundServices.LineSessionCleanupService>();
 
             var app = builder.Build();
 
@@ -258,7 +263,23 @@ namespace ClarityDesk
 
             app.UseSession();
 
+            // 使用 LINE Webhook 簽章驗證 Middleware
+            app.UseMiddleware<ClarityDesk.Infrastructure.Middleware.LineSignatureValidationMiddleware>();
+
             app.MapRazorPages();
+
+            // 建立 LINE Webhook 端點
+            app.MapPost("/api/line/webhook", async (HttpContext context, ClarityDesk.Services.Interfaces.ILineWebhookHandler handler) =>
+            {
+                using var reader = new StreamReader(context.Request.Body);
+                var payload = await reader.ReadToEndAsync();
+                var signature = context.Request.Headers["X-Line-Signature"].FirstOrDefault() ?? "";
+
+                var statusCode = await handler.HandleWebhookAsync(payload, signature, context.RequestAborted);
+                context.Response.StatusCode = statusCode;
+
+                return Results.StatusCode(statusCode);
+            });
 
             app.Run();
         }
