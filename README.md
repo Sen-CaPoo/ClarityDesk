@@ -18,6 +18,12 @@ ClarityDesk 是一個基於 ASP.NET Core 8 Razor Pages 開發的顧客問題紀�
   - 分頁顯示,支援大量資料
   - 即時統計資訊 (待處理、處理中、已完成)
 
+- **LINE 整合功能** ✨ **NEW**
+  - **LINE 官方帳號綁定**: 使用者可綁定 LINE 帳號,接收即時通知
+  - **推送通知**: 新回報單建立時,自動推送訊息給指派的處理人員
+  - **LINE 端回報問題**: 直接在 LINE 對話中透過互動式流程建立回報單
+  - **管理功能**: 管理員可查看綁定狀態、訊息日誌與 API 使用量
+
 - **LINE Login 整合** (使用者故事 2)
   - 透過 LINE 帳號快速註冊與登入
   - 自動同步 LINE 個人資料 (頭像、顯示名稱)
@@ -102,12 +108,13 @@ cd ClarityDesk
 }
 ```
 
-### 3. 設定 LINE Login
+### 3. 設定 LINE Login 與 LINE 整合
 
 1. 前往 [LINE Developers Console](https://developers.line.biz/console/)
-2. 建立新的 Channel (LINE Login)
-3. 取得 **Channel ID** 和 **Channel Secret**
-4. 設定 Callback URL: `https://your-domain/signin-line`
+2. 建立新的 Channel (Messaging API)
+3. 取得 **Channel ID**、**Channel Secret** 和 **Channel Access Token**
+4. 設定 LINE Login Callback URL: `https://your-domain/signin-line`
+5. 設定 Webhook URL: `https://your-domain/api/line/webhook`
 
 編輯 `appsettings.Development.json`:
 
@@ -116,9 +123,20 @@ cd ClarityDesk
   "LineLogin": {
     "ChannelId": "your-channel-id",
     "ChannelSecret": "your-channel-secret"
+  },
+  "LineSettings": {
+    "ChannelId": "your-channel-id",
+    "ChannelSecret": "your-channel-secret",
+    "ChannelAccessToken": "your-channel-access-token",
+    "WebhookPath": "/api/line/webhook",
+    "CallbackPath": "/signin-line",
+    "MonthlyPushLimit": 500,
+    "SessionTimeoutMinutes": 30
   }
 }
 ```
+
+⚠️ **安全性提醒**: 在生產環境中,請使用環境變數或 Azure Key Vault 儲存憑證,不要直接寫在設定檔中。
 
 ### 4. 執行 Migration
 
@@ -149,14 +167,25 @@ dotnet run
    - 授權 LINE Login 權限
    - 自動建立使用者帳號
 
-2. **建立回報單**
+2. **綁定 LINE 官方帳號** (可選,用於接收推送通知)
+   - 前往「LINE 綁定管理」頁面
+   - 掃描 QR Code 加入 ClarityDesk 官方帳號
+   - 完成綁定後可在 LINE 接收通知與回報問題
+
+3. **建立回報單**
    - 導覽至「回報單管理」
    - 點擊「新增回報單」
    - 填寫問題標題、內容、客戶資訊
    - 選擇緊急程度與所屬單位
-   - 指派處理人員
+   - 指派處理人員 (若已綁定 LINE,處理人員會收到推送通知)
 
-3. **管理回報單**
+4. **在 LINE 中回報問題** (若已綁定)
+   - 在 LINE 中開啟 ClarityDesk Bot 聊天室
+   - 傳送「回報問題」啟動互動式流程
+   - 依序填寫問題資訊
+   - 確認送出後自動建立回報單
+
+5. **管理回報單**
    - 檢視所有回報單列表
    - 使用篩選條件快速找到特定回報單
    - 編輯回報單資訊
@@ -174,6 +203,12 @@ dotnet run
    - 導覽至「系統管理」→「問題所屬單位維護」
    - 新增/編輯/刪除單位
    - 為單位指派預設處理人員
+
+3. **LINE 管理功能** ✨ **NEW**
+   - 導覽至「系統管理」→「LINE 管理」
+   - 檢視所有使用者的 LINE 綁定狀態
+   - 查看 LINE 訊息發送歷史記錄
+   - 監控 LINE API 使用量與配額狀況
 
 ## 🧪 測試
 

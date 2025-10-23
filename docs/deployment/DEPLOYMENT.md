@@ -254,6 +254,171 @@ Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
     -value @{name='LineLogin__ChannelId';value='your-channel-id'}
 ```
 
+### LINE 整合環境設定
+
+#### 1. LINE Developers Console 設定
+
+在部署前,需完成 LINE 官方帳號設定:
+
+**步驟 1: 建立 LINE Channel**
+
+1. 前往 [LINE Developers Console](https://developers.line.biz/console/)
+2. 建立新的 Provider (若尚未建立)
+3. 建立新的 Channel,類型選擇「Messaging API」
+4. 填寫基本資訊:
+   - **Channel name**: `ClarityDesk Bot`
+   - **Channel description**: 問題回報追蹤系統官方帳號
+   - **Category**: Business tools
+   - **Subcategory**: Project management
+
+**步驟 2: 取得憑證**
+
+從 Channel 設定頁面取得以下憑證:
+- **Channel ID**: 位於「Basic settings」分頁
+- **Channel Secret**: 位於「Basic settings」分頁
+- **Channel Access Token**: 位於「Messaging API」分頁,點擊「Issue」發行
+
+**步驟 3: 設定 Webhook URL**
+
+1. 前往「Messaging API」分頁
+2. 設定 **Webhook URL**: `https://your-production-domain.com/api/line/webhook`
+3. 啟用「Use webhook」開關
+4. 點擊「Verify」按鈕測試連線 (應顯示 Success)
+
+**步驟 4: 設定 LINE Login Callback**
+
+1. 前往「LINE Login」分頁
+2. 啟用 LINE Login 功能
+3. 設定 **Callback URL**: `https://your-production-domain.com/signin-line`
+
+**步驟 5: 關閉自動回覆**
+
+1. 前往「Messaging API」分頁
+2. 設定以下選項:
+   - **Use webhooks**: `Enabled`
+   - **Auto-reply messages**: `Disabled` ⚠️ 重要!
+   - **Greeting messages**: `Disabled` (或自訂歡迎訊息)
+
+#### 2. 設定 LINE 憑證 (環境變數)
+
+在 IIS 應用程式集區設定 LINE 相關環境變數:
+
+```powershell
+# 設定 LINE 憑證
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+    -filter "system.applicationHost/applicationPools/add[@name='ClarityDesk']/environmentVariables" `
+    -name "." `
+    -value @{name='LineSettings__ChannelId';value='YOUR_CHANNEL_ID'}
+
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+    -filter "system.applicationHost/applicationPools/add[@name='ClarityDesk']/environmentVariables" `
+    -name "." `
+    -value @{name='LineSettings__ChannelSecret';value='YOUR_CHANNEL_SECRET'}
+
+Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST' `
+    -filter "system.applicationHost/applicationPools/add[@name='ClarityDesk']/environmentVariables" `
+    -name "." `
+    -value @{name='LineSettings__ChannelAccessToken';value='YOUR_CHANNEL_ACCESS_TOKEN'}
+```
+
+#### 3. 更新 appsettings.json
+
+確保 `appsettings.json` 包含 LINE 設定結構 (不含實際憑證):
+
+```json
+{
+  "LineSettings": {
+    "ChannelId": "",
+    "ChannelSecret": "",
+    "ChannelAccessToken": "",
+    "WebhookPath": "/api/line/webhook",
+    "CallbackPath": "/signin-line",
+    "MonthlyPushLimit": 500,
+    "SessionTimeoutMinutes": 30
+  }
+}
+```
+
+⚠️ **安全性警告**: 絕對不要將實際憑證寫在 `appsettings.json` 中!使用環境變數或 Azure Key Vault。
+
+#### 4. 驗證 LINE 整合
+
+部署完成後,執行以下驗證步驟:
+
+**測試 Webhook 連線**:
+1. 前往 LINE Developers Console → Messaging API → Webhook settings
+2. 點擊「Verify」按鈕
+3. 應顯示「Success」訊息
+
+**測試 LINE Login**:
+1. 開啟網站 `https://your-domain.com`
+2. 點擊「使用 LINE 登入」
+3. 完成 LINE 授權流程
+4. 確認成功登入系統
+
+**測試 LINE 綁定**:
+1. 登入系統後,前往「LINE 綁定管理」頁面
+2. 掃描 QR Code 或點擊連結
+3. 在 LINE 中加入 ClarityDesk 官方帳號為好友
+4. 確認頁面顯示「已綁定」狀態
+
+**測試推送通知**:
+1. 建立新的回報單
+2. 指派給已綁定 LINE 的處理人員
+3. 確認該人員的 LINE 收到推送訊息
+
+**測試 LINE 端回報**:
+1. 在 LINE 中向 ClarityDesk Bot 傳送「回報問題」
+2. 依照引導完成對話流程
+3. 確認網頁端出現新的回報單
+
+#### 5. LINE API 配額監控
+
+LINE Messaging API 免費方案限制:
+- **每月推送訊息**: 500 則
+- **配額重置**: 每月 1 號
+- **超過配額**: 推送失敗,但不影響其他功能
+
+監控建議:
+- 定期檢查管理員介面的「LINE API 使用量監控」
+- 當使用量超過 80% 時會記錄警告日誌
+- 考慮升級 LINE API 方案以移除限制
+
+#### 6. 故障排除
+
+**Webhook 驗證失敗 (401 Unauthorized)**:
+- 檢查 `ChannelSecret` 是否正確
+- 確認 Middleware 已正確註冊於 `Program.cs`
+- 檢查應用程式日誌查看詳細錯誤
+
+**推送訊息失敗 (403 Forbidden)**:
+- 檢查 `ChannelAccessToken` 是否正確或過期
+- 重新發行 Token 並更新環境變數
+- 重新啟動 IIS 應用程式集區
+
+**LINE 端回報流程中斷**:
+- 檢查背景清理服務是否正常運作
+- 查看 `LineConversationSessions` 資料表是否有過期記錄
+- 確認 Session 逾時設定 (`SessionTimeoutMinutes`)
+
+**配額超過限制**:
+- 查看「LINE 訊息日誌」確認發送失敗原因
+- 暫時停用部分單位的推送通知
+- 升級 LINE API 方案
+
+#### 7. LINE 整合部署檢查清單
+
+- [ ] LINE Channel 已建立並取得所有憑證
+- [ ] Webhook URL 已設定為正式環境位址
+- [ ] Webhook 連線驗證成功
+- [ ] LINE Login Callback URL 已設定
+- [ ] 自動回覆訊息已關閉 (避免衝突)
+- [ ] LINE 憑證已設定為環境變數 (不在 appsettings.json 中)
+- [ ] HTTPS 強制啟用 (LINE 要求)
+- [ ] 執行完整的 LINE 功能測試 (綁定、推送、回報)
+- [ ] 管理員可存取 LINE 管理頁面
+- [ ] 配額監控功能正常運作
+
 ## SSL 憑證配置
 
 ### 使用 Let's Encrypt (免費)

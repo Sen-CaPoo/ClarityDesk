@@ -310,10 +310,10 @@
 
 ### 文件更新
 
-- [ ] T142 [P] 更新 `docs/user-manual.md` 新增 LINE 整合功能使用說明
-- [ ] T143 [P] 更新 `docs/deployment/DEPLOYMENT.md` 新增 LINE 整合環境設定章節
-- [ ] T144 [P] 建立變更記錄: `docs/changelogs/002-line-integration.md`
-- [ ] T145 [P] 更新專案 README.md 新增 LINE 整合功能說明
+- [X] T142 [P] 更新 `docs/user-manual.md` 新增 LINE 整合功能使用說明
+- [X] T143 [P] 更新 `docs/deployment/DEPLOYMENT.md` 新增 LINE 整合環境設定章節
+- [X] T144 [P] 建立變更記錄: `docs/changelogs/002-line-integration.md`
+- [X] T145 [P] 更新專案 README.md 新增 LINE 整合功能說明
 
 ### 驗證與部署準備
 
