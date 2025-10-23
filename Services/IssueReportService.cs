@@ -17,6 +17,8 @@ public class IssueReportService : IIssueReportService
     private readonly ApplicationDbContext _context;
     private readonly IMemoryCache _cache;
     private readonly ILogger<IssueReportService> _logger;
+    private readonly ILineMessagingService? _lineMessagingService;
+    private readonly ILineBindingService? _lineBindingService;
 
     private const string CacheKeyStatistics = "issue_statistics";
     private const int CacheExpirationMinutes = 5;
@@ -24,11 +26,15 @@ public class IssueReportService : IIssueReportService
     public IssueReportService(
         ApplicationDbContext context,
         IMemoryCache cache,
-        ILogger<IssueReportService> logger)
+        ILogger<IssueReportService> logger,
+        ILineMessagingService? lineMessagingService = null,
+        ILineBindingService? lineBindingService = null)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _lineMessagingService = lineMessagingService;
+        _lineBindingService = lineBindingService;
     }
 
     /// <inheritdoc />
@@ -63,12 +69,73 @@ public class IssueReportService : IIssueReportService
             _cache.Remove(CacheKeyStatistics);
 
             _logger.LogInformation("成功建立回報單 ID: {IssueId}", issue.Id);
+
+            // 發送 LINE 推送通知 (非同步,不影響回報單建立)
+            _ = SendLineNotificationAsync(issue.Id, dto, cancellationToken);
+
             return issue.Id;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "建立回報單時發生錯誤");
             throw;
+        }
+    }
+
+    /// <summary>
+    /// 發送 LINE 推送通知給指派的處理人員
+    /// </summary>
+    private async Task SendLineNotificationAsync(int issueId, CreateIssueReportDto dto, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // 如果服務未註冊,跳過通知
+            if (_lineMessagingService == null || _lineBindingService == null)
+            {
+                _logger.LogDebug("LINE 服務未啟用,跳過推送通知");
+                return;
+            }
+
+            // 發送通知給指派的處理人員
+            if (dto.AssignedUserId > 0)
+            {
+                // 檢查處理人員是否已綁定 LINE
+                var binding = await _lineBindingService.GetBindingByUserIdAsync(dto.AssignedUserId, cancellationToken);
+                
+                if (binding != null && binding.BindingStatus == BindingStatus.Active)
+                {
+                    // 重新查詢完整的回報單資料以建構通知
+                    var issueDto = await GetIssueReportByIdAsync(issueId, cancellationToken);
+                    
+                    if (issueDto != null)
+                    {
+                        var success = await _lineMessagingService.SendIssueNotificationAsync(
+                            binding.LineUserId,
+                            issueDto,
+                            cancellationToken);
+
+                        if (success)
+                        {
+                            _logger.LogInformation("成功發送 LINE 通知: IssueId={IssueId}, UserId={UserId}",
+                                issueId, dto.AssignedUserId);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("LINE 通知發送失敗: IssueId={IssueId}, UserId={UserId}",
+                                issueId, dto.AssignedUserId);
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogDebug("處理人員未綁定 LINE 或狀態非 Active: UserId={UserId}", dto.AssignedUserId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // 通知失敗不影響回報單建立,僅記錄錯誤
+            _logger.LogError(ex, "發送 LINE 通知時發生錯誤: IssueId={IssueId}", issueId);
         }
     }
 

@@ -11,14 +11,17 @@ namespace ClarityDesk.Pages.Issues
     public class DetailsModel : PageModel
     {
         private readonly IIssueReportService _issueReportService;
+        private readonly IIssueReportTokenService? _tokenService;
         private readonly ILogger<DetailsModel> _logger;
 
         public DetailsModel(
             IIssueReportService issueReportService,
-            ILogger<DetailsModel> logger)
+            ILogger<DetailsModel> logger,
+            IIssueReportTokenService? tokenService = null)
         {
             _issueReportService = issueReportService;
             _logger = logger;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -29,11 +32,26 @@ namespace ClarityDesk.Pages.Issues
         /// <summary>
         /// 載入回報單詳情
         /// </summary>
-        public async Task<IActionResult> OnGetAsync(int id)
+        public async Task<IActionResult> OnGetAsync(int id, string? token = null)
         {
             try
             {
                 _logger.LogInformation("載入回報單詳情，ID: {IssueId}", id);
+
+                // 如果有提供 Token，進行驗證 (從 LINE 通知連結進入)
+                if (!string.IsNullOrEmpty(token) && _tokenService != null)
+                {
+                    var validatedId = _tokenService.ValidateToken(token);
+                    
+                    if (validatedId == null || validatedId.Value != id)
+                    {
+                        _logger.LogWarning("Token 驗證失敗: IssueId={IssueId}", id);
+                        TempData["ErrorMessage"] = "無效的存取連結，請重新從 LINE 通知進入。";
+                        return RedirectToPage("/Account/AccessDenied");
+                    }
+
+                    _logger.LogInformation("Token 驗證成功: IssueId={IssueId}", id);
+                }
 
                 IssueReport = await _issueReportService.GetIssueReportByIdAsync(id);
                 

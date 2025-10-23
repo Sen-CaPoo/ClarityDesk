@@ -143,45 +143,45 @@
 
 ### 測試 (TDD - 先寫測試)
 
-- [ ] T051 [P] [US2] 建立測試檔案: `LineMessagingServiceTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
-- [ ] T052 [P] [US2] 撰寫單元測試: `SendIssueNotificationAsync_ValidData_ReturnsTrue`
-- [ ] T053 [P] [US2] 撰寫單元測試: `SendIssueNotificationAsync_LineApiError_ReturnsFalse`
-- [ ] T054 [P] [US2] 撰寫單元測試: `BuildIssueNotificationFlexMessage_ReturnsValidJson`
-- [ ] T055 [P] [US2] 撰寫單元測試: `CanSendPushMessageAsync_BelowLimit_ReturnsTrue`
-- [ ] T056 [P] [US2] 撰寫單元測試: `CanSendPushMessageAsync_ExceedLimit_ReturnsFalse`
-- [ ] T057 [US2] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineMessagingServiceTests"`)
+- [X] T051 [P] [US2] 建立測試檔案: `LineMessagingServiceTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
+- [X] T052 [P] [US2] 撰寫單元測試: `SendIssueNotificationAsync_ValidData_ReturnsTrue`
+- [X] T053 [P] [US2] 撰寫單元測試: `SendIssueNotificationAsync_LineApiError_ReturnsFalse`
+- [X] T054 [P] [US2] 撰寫單元測試: `BuildIssueNotificationFlexMessage_ReturnsValidJson`
+- [X] T055 [P] [US2] 撰寫單元測試: `CanSendPushMessageAsync_BelowLimit_ReturnsTrue`
+- [X] T056 [P] [US2] 撰寫單元測試: `CanSendPushMessageAsync_ExceedLimit_ReturnsFalse`
+- [X] T057 [US2] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineMessagingServiceTests"`)
 
 ### 服務實作
 
-- [ ] T058 [US2] 建立服務介面: `ILineMessagingService` in `Services/Interfaces/ILineMessagingService.cs`
-- [ ] T059 [US2] 實作服務: `LineMessagingService` in `Services/LineMessagingService.cs`
-- [ ] T060 [US2] 實作方法: `BuildIssueNotificationFlexMessage` (建構 Flex Message JSON,參考 research.md 範例)
-- [ ] T061 [US2] 實作方法: `SendIssueNotificationAsync` (呼叫 LINE Messaging API)
-- [ ] T062 [US2] 實作方法: `CanSendPushMessageAsync` (檢查配額限制)
-- [ ] T063 [US2] 實作方法: `LogMessageAsync` (記錄訊息日誌至 `LineMessageLog`)
-- [ ] T064 [US2] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineMessagingService, LineMessagingService>()`
-- [ ] T065 [US2] 註冊 `ILineMessagingClient` (LINE SDK): `builder.Services.AddSingleton<ILineMessagingClient>(...)`
-- [ ] T066 [US2] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineMessagingServiceTests"`)
+- [X] T058 [US2] 建立服務介面: `ILineMessagingService` in `Services/Interfaces/ILineMessagingService.cs`
+- [X] T059 [US2] 實作服務: `LineMessagingService` in `Services/LineMessagingService.cs`
+- [X] T060 [US2] 實作方法: `BuildIssueNotificationFlexMessage` (建構 Flex Message JSON,參考 research.md 範例)
+- [X] T061 [US2] 實作方法: `SendIssueNotificationAsync` (呼叫 LINE Messaging API)
+- [X] T062 [US2] 實作方法: `CanSendPushMessageAsync` (檢查配額限制)
+- [X] T063 [US2] 實作方法: `LogMessageAsync` (記錄訊息日誌至 `LineMessageLog`)
+- [X] T064 [US2] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineMessagingService, LineMessagingService>()`
+- [X] T065 [US2] 註冊 `ILineMessagingClient` (LINE SDK): `builder.Services.AddSingleton<ILineMessagingClient>(...)`
+- [X] T066 [US2] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineMessagingServiceTests"`)
 
 ### Token 安全機制
 
-- [ ] T067 [P] [US2] 建立服務介面: `IIssueReportTokenService` in `Services/Interfaces/IIssueReportTokenService.cs`
-- [ ] T068 [P] [US2] 實作服務: `IssueReportTokenService` (使用 Data Protection API,參考 research.md)
-- [ ] T069 [US2] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<IIssueReportTokenService, IssueReportTokenService>()`
-- [ ] T070 [US2] 修改 `Pages/Issues/Details.cshtml.cs` 新增 Token 驗證邏輯
+- [X] T067 [P] [US2] 建立服務介面: `IIssueReportTokenService` in `Services/Interfaces/IIssueReportTokenService.cs`
+- [X] T068 [P] [US2] 實作服務: `IssueReportTokenService` (使用 Data Protection API,參考 research.md)
+- [X] T069 [US2] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<IIssueReportTokenService, IssueReportTokenService>()`
+- [X] T070 [US2] 修改 `Pages/Issues/Details.cshtml.cs` 新增 Token 驗證邏輯
 
 ### 整合至回報單建立流程
 
-- [ ] T071 [US2] 修改 `IssueReportService.CreateIssueReportAsync` 方法 (在建立回報單後呼叫推送通知)
-- [ ] T072 [US2] 實作推送邏輯: 檢查處理人員綁定狀態 → 呼叫 `ILineMessagingService.SendIssueNotificationAsync`
-- [ ] T073 [US2] 確保推送失敗不影響回報單建立 (使用 try-catch 包裝)
+- [X] T071 [US2] 修改 `IssueReportService.CreateIssueReportAsync` 方法 (在建立回報單後呼叫推送通知)
+- [X] T072 [US2] 實作推送邏輯: 檢查處理人員綁定狀態 → 呼叫 `ILineMessagingService.SendIssueNotificationAsync`
+- [X] T073 [US2] 確保推送失敗不影響回報單建立 (使用 try-catch 包裝)
 
 ### 配額監控機制
 
-- [ ] T074 [P] [US2] 建立服務介面: `ILineUsageMonitorService` in `Services/Interfaces/ILineUsageMonitorService.cs`
-- [ ] T075 [P] [US2] 實作服務: `LineUsageMonitorService` (參考 research.md)
-- [ ] T076 [US2] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineUsageMonitorService, LineUsageMonitorService>()`
-- [ ] T077 [US2] 整合至 `LineMessagingService`: 發送前檢查配額,發送後記錄用量
+- [X] T074 [P] [US2] 建立服務介面: `ILineUsageMonitorService` in `Services/Interfaces/ILineUsageMonitorService.cs`
+- [X] T075 [P] [US2] 實作服務: `LineUsageMonitorService` (參考 research.md)
+- [X] T076 [US2] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineUsageMonitorService, LineUsageMonitorService>()`
+- [X] T077 [US2] 整合至 `LineMessagingService`: 發送前檢查配額,發送後記錄用量
 
 **Checkpoint**: User Story 2 完成,處理人員可在 LINE 即時收到回報單通知,大幅提升回應速度
 

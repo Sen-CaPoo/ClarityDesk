@@ -184,11 +184,27 @@ namespace ClarityDesk
             });
 
             // 註冊服務層
-            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportService, ClarityDesk.Services.IssueReportService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IAuthenticationService, ClarityDesk.Services.AuthenticationService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IUserManagementService, ClarityDesk.Services.UserManagementService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IDepartmentService, ClarityDesk.Services.DepartmentService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineBindingService, ClarityDesk.Services.LineBindingService>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineMessagingService, ClarityDesk.Services.LineMessagingService>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportTokenService, ClarityDesk.Services.IssueReportTokenService>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineUsageMonitorService, ClarityDesk.Services.LineUsageMonitorService>();
+            
+            // IssueReportService 需要在 LINE 服務之後註冊以確保依賴可用
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportService, ClarityDesk.Services.IssueReportService>();
+
+            // 註冊 LINE Messaging API Client
+            builder.Services.AddSingleton<Line.Messaging.ILineMessagingClient>(sp =>
+            {
+                var configuration = sp.GetRequiredService<IConfiguration>();
+                var channelAccessToken = configuration["LineSettings:ChannelAccessToken"] ?? "";
+                return new Line.Messaging.LineMessagingClient(channelAccessToken);
+            });
+
+            // 註冊 Data Protection (用於 Token 加密)
+            builder.Services.AddDataProtection();
 
             var app = builder.Build();
 
