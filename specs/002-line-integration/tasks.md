@@ -27,15 +27,15 @@
 
 ### 套件與配置
 
-- [ ] T001 安裝 LINE Messaging API SDK (`dotnet add package Line.Messaging --version 1.4.5`)
-- [ ] T002 [P] 設定 User Secrets (LINE 憑證: ChannelId, ChannelSecret, ChannelAccessToken)
-- [ ] T003 [P] 更新 `appsettings.json` 新增 LineSettings 區段結構 (不含實際憑證)
-- [ ] T004 建立 LINE Developers Console Channel 並記錄憑證至文件 (參考 quickstart.md)
+- [X] T001 安裝 LINE Messaging API SDK (`dotnet add package Line.Messaging --version 1.4.5`)
+- [X] T002 [P] 設定 User Secrets (LINE 憑證: ChannelId, ChannelSecret, ChannelAccessToken)
+- [X] T003 [P] 更新 `appsettings.json` 新增 LineSettings 區段結構 (不含實際憑證)
+- [X] T004 建立 LINE Developers Console Channel 並記錄憑證至文件 (參考 quickstart.md)
 
 ### 專案結構準備
 
-- [ ] T005 [P] 建立目錄結構: `Models/Enums/`, `Models/Extensions/`, `Services/Exceptions/`, `Infrastructure/BackgroundServices/`
-- [ ] T006 [P] 建立目錄結構: `Infrastructure/Middleware/`, `Tests/ClarityDesk.UnitTests/Services/` (若不存在)
+- [X] T005 [P] 建立目錄結構: `Models/Enums/`, `Models/Extensions/`, `Services/Exceptions/`, `Infrastructure/BackgroundServices/`
+- [X] T006 [P] 建立目錄結構: `Infrastructure/Middleware/`, `Tests/ClarityDesk.UnitTests/Services/` (若不存在)
 
 **Checkpoint**: 開發環境已設定完成,可開始實作資料模型
 
