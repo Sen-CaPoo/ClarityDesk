@@ -25,6 +25,7 @@ namespace ClarityDesk
                 options.Conventions.AuthorizePage("/Issues/Create");
                 options.Conventions.AuthorizePage("/Issues/Edit");
                 options.Conventions.AuthorizePage("/Issues/Details");
+                options.Conventions.AuthorizePage("/Account/LineBinding");
                 options.Conventions.AuthorizePage("/Admin/Users/Index", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Index", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Create", "Admin");
@@ -117,6 +118,24 @@ namespace ClarityDesk
 
                         var userDto = await authService.LoginOrRegisterWithLineAsync(lineProfile);
 
+                        // 呼叫 LineBindingService 建立或更新 LINE 綁定關係
+                        try
+                        {
+                            var lineBindingService = context.HttpContext.RequestServices.GetRequiredService<ClarityDesk.Services.Interfaces.ILineBindingService>();
+                            await lineBindingService.CreateOrUpdateBindingAsync(
+                                userDto.Id,
+                                userId ?? "",
+                                displayName ?? "",
+                                pictureUrl
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            // 綁定失敗不影響登入流程,僅記錄錯誤
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogError(ex, "建立 LINE 綁定時發生錯誤: UserId={UserId}, LineUserId={LineUserId}", userDto.Id, userId);
+                        }
+
                         // 新增使用者 ID 與角色到 Claims
                         if (context.Identity != null)
                         {
@@ -169,6 +188,7 @@ namespace ClarityDesk
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IAuthenticationService, ClarityDesk.Services.AuthenticationService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IUserManagementService, ClarityDesk.Services.UserManagementService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IDepartmentService, ClarityDesk.Services.DepartmentService>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineBindingService, ClarityDesk.Services.LineBindingService>();
 
             var app = builder.Build();
 

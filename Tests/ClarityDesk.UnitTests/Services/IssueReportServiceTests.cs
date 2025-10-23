@@ -99,6 +99,17 @@ public class IssueReportServiceTests
         var context = CreateDbContext();
         var service = CreateService(context);
         
+        var user = new User
+        {
+            DisplayName = "測試使用者",
+            Email = "test@example.com",
+            LineUserId = "U1234567890",
+            Role = UserRole.User,
+            IsActive = true
+        };
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+        
         var issue = new IssueReport
         {
             Title = "原始標題",
@@ -109,7 +120,7 @@ public class IssueReportServiceTests
             ReporterName = "原始回報人",
             CustomerName = "原始顧客",
             CustomerPhone = "0911111111",
-            AssignedUserId = 1,
+            AssignedUserId = user.Id,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -127,12 +138,12 @@ public class IssueReportServiceTests
             ReporterName = "更新回報人",
             CustomerName = "更新顧客",
             CustomerPhone = "0987654321",
-            AssignedUserId = 1,
+            AssignedUserId = user.Id,
             DepartmentIds = new List<int> { 1 }
         };
 
         // Act
-        var result = await service.UpdateIssueReportAsync(issue.Id, updateDto);
+        var result = await service.UpdateIssueReportAsync(issue.Id, updateDto, user.Id);
 
         // Assert
         result.Should().BeTrue();

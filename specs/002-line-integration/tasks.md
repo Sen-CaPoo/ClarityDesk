@@ -94,40 +94,40 @@
 
 ### 測試 (TDD - 先寫測試)
 
-- [ ] T029 [P] [US1] 建立測試檔案: `LineBindingServiceTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
-- [ ] T030 [P] [US1] 撰寫單元測試: `CreateOrUpdateBindingAsync_NewBinding_ReturnsBindingId`
-- [ ] T031 [P] [US1] 撰寫單元測試: `CreateOrUpdateBindingAsync_DuplicateLineUserId_ThrowsException`
-- [ ] T032 [P] [US1] 撰寫單元測試: `GetBindingByUserIdAsync_ExistingBinding_ReturnsDto`
-- [ ] T033 [P] [US1] 撰寫單元測試: `IsUserBoundAsync_BoundUser_ReturnsTrue`
-- [ ] T034 [P] [US1] 撰寫單元測試: `UnbindAsync_ExistingBinding_ReturnsTrue`
-- [ ] T035 [P] [US1] 撰寫單元測試: `MarkAsBlockedAsync_UpdatesStatus`
-- [ ] T036 [US1] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineBindingServiceTests"`)
+- [X] T029 [P] [US1] 建立測試檔案: `LineBindingServiceTests.cs` in `Tests/ClarityDesk.UnitTests/Services/`
+- [X] T030 [P] [US1] 撰寫單元測試: `CreateOrUpdateBindingAsync_NewBinding_ReturnsBindingId`
+- [X] T031 [P] [US1] 撰寫單元測試: `CreateOrUpdateBindingAsync_DuplicateLineUserId_ThrowsException`
+- [X] T032 [P] [US1] 撰寫單元測試: `GetBindingByUserIdAsync_ExistingBinding_ReturnsDto`
+- [X] T033 [P] [US1] 撰寫單元測試: `IsUserBoundAsync_BoundUser_ReturnsTrue`
+- [X] T034 [P] [US1] 撰寫單元測試: `UnbindAsync_ExistingBinding_ReturnsTrue`
+- [X] T035 [P] [US1] 撰寫單元測試: `MarkAsBlockedAsync_UpdatesStatus`
+- [X] T036 [US1] 執行測試確認失敗 (`dotnet test --filter "FullyQualifiedName~LineBindingServiceTests"`)
 
 ### 服務實作
 
-- [ ] T037 [US1] 建立服務介面: `ILineBindingService` in `Services/Interfaces/ILineBindingService.cs` (參考 contracts/SERVICE-INTERFACES.md)
-- [ ] T038 [US1] 實作服務: `LineBindingService` in `Services/LineBindingService.cs` (實作所有介面方法)
-- [ ] T039 [US1] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineBindingService, LineBindingService>()`
-- [ ] T040 [US1] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineBindingServiceTests"`)
+- [X] T037 [US1] 建立服務介面: `ILineBindingService` in `Services/Interfaces/ILineBindingService.cs` (參考 contracts/SERVICE-INTERFACES.md)
+- [X] T038 [US1] 實作服務: `LineBindingService` in `Services/LineBindingService.cs` (實作所有介面方法)
+- [X] T039 [US1] 在 `Program.cs` 註冊服務: `builder.Services.AddScoped<ILineBindingService, LineBindingService>()`
+- [X] T040 [US1] 執行測試確認通過 (`dotnet test --filter "FullyQualifiedName~LineBindingServiceTests"`)
 
 ### LINE Login OAuth 整合
 
-- [ ] T041 [US1] 在 `Program.cs` 設定 LINE OAuth Provider (使用 `AddOAuth("LINE", ...)`, 參考 research.md)
-- [ ] T042 [US1] 實作 OAuth OnCreatingTicket 事件處理 (呼叫 `ILineBindingService.CreateOrUpdateBindingAsync`)
-- [ ] T043 [US1] 修改 `User` 實體新增導覽屬性: `LineBinding?` in `Models/Entities/User.cs`
+- [X] T041 [US1] 在 `Program.cs` 設定 LINE OAuth Provider (使用 `AddOAuth("LINE", ...)`, 參考 research.md)
+- [X] T042 [US1] 實作 OAuth OnCreatingTicket 事件處理 (呼叫 `ILineBindingService.CreateOrUpdateBindingAsync`)
+- [X] T043 [US1] 修改 `User` 實體新增導覽屬性: `LineBinding?` in `Models/Entities/User.cs`
 
 ### 綁定管理頁面 (Razor Pages)
 
-- [ ] T044 [P] [US1] 建立 PageModel: `LineBinding.cshtml.cs` in `Pages/Account/LineBinding.cshtml.cs`
-- [ ] T045 [P] [US1] 建立 View: `LineBinding.cshtml` in `Pages/Account/LineBinding.cshtml` (包含綁定按鈕、QR Code 顯示、解綁按鈕)
-- [ ] T046 [US1] 實作 PageModel 方法: `OnGetAsync` (載入綁定狀態)
-- [ ] T047 [US1] 實作 PageModel 方法: `OnPostUnbindAsync` (處理解除綁定)
-- [ ] T048 [US1] 在 `_Layout.cshtml` 或 `_LoginPartial.cshtml` 新增「LINE 綁定」導覽連結
+- [X] T044 [P] [US1] 建立 PageModel: `LineBinding.cshtml.cs` in `Pages/Account/LineBinding.cshtml.cs`
+- [X] T045 [P] [US1] 建立 View: `LineBinding.cshtml` in `Pages/Account/LineBinding.cshtml` (包含綁定按鈕、QR Code 顯示、解綁按鈕)
+- [X] T046 [US1] 實作 PageModel 方法: `OnGetAsync` (載入綁定狀態)
+- [X] T047 [US1] 實作 PageModel 方法: `OnPostUnbindAsync` (處理解除綁定)
+- [X] T048 [US1] 在 `_Layout.cshtml` 或 `_LoginPartial.cshtml` 新增「LINE 綁定」導覽連結
 
 ### 訪客帳號限制
 
-- [ ] T049 [US1] 在 `LineBinding.cshtml` 新增訪客帳號檢查,禁用綁定按鈕
-- [ ] T050 [US1] 在 `LineBindingService.CreateOrUpdateBindingAsync` 新增訪客帳號驗證,拋出 `InvalidOperationException`
+- [X] T049 [US1] 在 `LineBinding.cshtml` 新增訪客帳號檢查,禁用綁定按鈕
+- [X] T050 [US1] 在 `LineBindingService.CreateOrUpdateBindingAsync` 新增訪客帳號驗證,拋出 `InvalidOperationException`
 
 **Checkpoint**: User Story 1 完成,使用者可透過網頁綁定 LINE 帳號,為後續功能奠定基礎
 
