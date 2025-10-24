@@ -215,7 +215,7 @@
                                     </td>
                                     <td>@issue.CustomerName</td>
                                     <td>@issue.ReporterName</td>
-                                    <td>@issue.RecordDate.ToString("yyyy-MM-dd")</td>
+                                    <td><taipei-time value="@issue.RecordDate" format="yyyy-MM-dd" /></td>
                                     <td>
                                         @switch (issue.Status)
                                         {

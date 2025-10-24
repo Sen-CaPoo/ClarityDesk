@@ -1,3 +1,4 @@
+using ClarityDesk.Infrastructure.Helpers;
 using ClarityDesk.Models.DTOs;
 using ClarityDesk.Models.Entities;
 using ClarityDesk.Services.Interfaces;
@@ -53,8 +54,12 @@ namespace ClarityDesk.Pages.Issues
             {
                 await LoadReferenceDataAsync();
                 
-                // 設定預設值 - 使用當前日期時間
-                IssueReport.RecordDate = DateTime.Now;
+                // 設定預設值 - 使用台北時間顯示，但不指定Kind，讓瀏覽器當作本地時間處理
+                // 去除毫秒部分，只保留到秒
+                var now = TimeZoneHelper.GetTaipeiNow();
+                IssueReport.RecordDate = DateTime.SpecifyKind(
+                    new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second),
+                    DateTimeKind.Unspecified);
                 
                 // 設定回報人姓名為當前登入使用者
                 var currentUserName = User.Identity?.Name;
@@ -96,6 +101,12 @@ namespace ClarityDesk.Pages.Issues
                     ModelState.AddModelError("IssueReport.DepartmentIds", "請至少選擇一個問題所屬單位");
                     await LoadReferenceDataAsync();
                     return Page();
+                }
+                
+                // 將瀏覽器傳來的本地時間轉換為 UTC 時間儲存
+                if (IssueReport.RecordDate.Kind == DateTimeKind.Unspecified)
+                {
+                    IssueReport.RecordDate = TimeZoneHelper.ConvertToUtc(IssueReport.RecordDate);
                 }
 
                 // 建立回報單

@@ -62,7 +62,7 @@
                                             <tbody>
                                                 <tr>
                                                     <td class="text-muted" style="width: 40%;">紀錄日期：</td>
-                                                    <td><strong>@Model.IssueReport.RecordDate.ToString("yyyy/MM/dd HH:mm:ss")</strong></td>
+                                                    <td><strong><taipei-time value="@Model.IssueReport.CreatedAt" format="yyyy/MM/dd HH:mm:ss" /></strong></td>
                                                 </tr>
                                                 <tr>
                                                     <td class="text-muted">緊急程度：</td>
@@ -136,7 +136,7 @@
                                 <hr />
                                 <div class="row text-muted small">
                                     <div class="col-md-4">
-                                        <i class="bi bi-clock"></i> 建立時間：@Model.IssueReport.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")
+                                        <i class="bi bi-clock"></i> 建立時間：<taipei-time value="@Model.IssueReport.CreatedAt" format="yyyy/MM/dd HH:mm:ss" />
                                     </div>
                                     <div class="col-md-4 text-md-center">
                                         <i class="bi bi-clock-history"></i> 最後修改：@Model.IssueReport.UpdatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")

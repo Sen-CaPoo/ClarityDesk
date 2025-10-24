@@ -1,4 +1,5 @@
 using ClarityDesk.Data;
+using ClarityDesk.Infrastructure.Helpers;
 using ClarityDesk.Models.DTOs;
 using ClarityDesk.Models.Entities;
 using ClarityDesk.Models.Enums;
@@ -64,15 +65,45 @@ namespace ClarityDesk.Services
                 // 建構 Flex Message  
                 var flexMessageJson = BuildIssueNotificationFlexMessage(issueReport);
                 
-                // 暫時使用文字訊息代替 Flex Message (簡化實作)
-                var summaryText = $"📋 新回報單通知\\n\\n" +
-                    $"單號: #{issueReport.Id:D6}\\n" +
-                    $"標題: {issueReport.Title}\\n" +
-                    $"緊急程度: {issueReport.PriorityText}\\n" +
-                    $"單位: {string.Join(", ", issueReport.DepartmentNames)}\\n" +
-                    $"聯絡人: {issueReport.CustomerName}\\n" +
-                    $"電話: {issueReport.CustomerPhone}\\n\\n" +
-                    $"請盡快處理!";
+                // 將 UTC 時間轉換為台北時間後格式化
+                var taipeiTime = TimeZoneHelper.ConvertToTaipeiTime(issueReport.CreatedAt);
+                var recordDateStr = taipeiTime.ToString("yyyy/MM/dd HH:mm");
+                
+                // 產生回報單編號格式 (例如: #20251023-001)
+                var issueNumberStr = $"#{taipeiTime:yyyyMMdd}-{issueReport.Id:D3}";
+                
+                // 緊急程度 emoji
+                var priorityEmoji = issueReport.Priority switch
+                {
+                    PriorityLevel.High => "🔴",
+                    PriorityLevel.Medium => "🟡",
+                    PriorityLevel.Low => "🟢",
+                    _ => "⚪"
+                };
+                
+                // 單位列表
+                var departmentsStr = issueReport.DepartmentNames != null && issueReport.DepartmentNames.Any()
+                    ? string.Join("、", issueReport.DepartmentNames)
+                    : "未指派";
+                
+                // 產生查看連結 (不需要 token)
+                var baseUrl = _configuration["LineSettings:BaseUrl"] ?? "https://localhost:5001";
+                var detailsUrl = $"{baseUrl}/Issues/Details/{issueReport.Id}";
+                
+                // 使用規格定義的文字訊息格式
+                var summaryText = 
+                    $"【新問題回報】您有一則新的問題待處理\n" +
+                    $"━━━━━━━━━━━━━━━━━━━━\n" +
+                    $"📋 回報單編號:{issueNumberStr}\n" +
+                    $"📌 問題標題:{issueReport.Title}\n" +
+                    $"{priorityEmoji} 緊急程度:{issueReport.PriorityText}\n" +
+                    $"🏢 問題所屬單位:{departmentsStr}\n" +
+                    $"👤 聯絡人:{issueReport.CustomerName}\n" +
+                    $"📞 連絡電話:{issueReport.CustomerPhone}\n" +
+                    $"📅 紀錄日期:{recordDateStr}\n" +
+                    $"✍️ 回報人:{issueReport.ReporterName}\n" +
+                    $"━━━━━━━━━━━━━━━━━━━━\n" +
+                    $"[查看回報單詳情] 👉 {detailsUrl}";
                 
                 var messages = new List<ISendMessage> { new TextMessage(summaryText) };
 

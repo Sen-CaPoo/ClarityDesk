@@ -70,8 +70,14 @@ public class IssueReportService : IIssueReportService
 
             _logger.LogInformation("成功建立回報單 ID: {IssueId}", issue.Id);
 
-            // 發送 LINE 推送通知 (非同步,不影響回報單建立)
-            _ = SendLineNotificationAsync(issue.Id, dto, cancellationToken);
+            // 重新查詢完整的回報單資料 (包含單位與處理人員)
+            var issueDto = await GetIssueReportByIdAsync(issue.Id, cancellationToken);
+
+            // 發送 LINE 推送通知 (等待完成以確保發送成功,但不影響回報單建立結果)
+            if (issueDto != null)
+            {
+                await SendLineNotificationAsync(issue.Id, issueDto, cancellationToken);
+            }
 
             return issue.Id;
         }
@@ -85,7 +91,7 @@ public class IssueReportService : IIssueReportService
     /// <summary>
     /// 發送 LINE 推送通知給指派的處理人員
     /// </summary>
-    private async Task SendLineNotificationAsync(int issueId, CreateIssueReportDto dto, CancellationToken cancellationToken)
+    private async Task SendLineNotificationAsync(int issueId, IssueReportDto issueDto, CancellationToken cancellationToken)
     {
         try
         {
@@ -97,39 +103,38 @@ public class IssueReportService : IIssueReportService
             }
 
             // 發送通知給指派的處理人員
-            if (dto.AssignedUserId > 0)
+            if (issueDto.AssignedUserId > 0)
             {
                 // 檢查處理人員是否已綁定 LINE
-                var binding = await _lineBindingService.GetBindingByUserIdAsync(dto.AssignedUserId, cancellationToken);
+                var binding = await _lineBindingService.GetBindingByUserIdAsync(issueDto.AssignedUserId, cancellationToken);
                 
                 if (binding != null && binding.BindingStatus == BindingStatus.Active)
                 {
-                    // 重新查詢完整的回報單資料以建構通知
-                    var issueDto = await GetIssueReportByIdAsync(issueId, cancellationToken);
-                    
-                    if (issueDto != null)
-                    {
-                        var success = await _lineMessagingService.SendIssueNotificationAsync(
-                            binding.LineUserId,
-                            issueDto,
-                            cancellationToken);
+                    var success = await _lineMessagingService.SendIssueNotificationAsync(
+                        binding.LineUserId,
+                        issueDto,
+                        cancellationToken);
 
-                        if (success)
-                        {
-                            _logger.LogInformation("成功發送 LINE 通知: IssueId={IssueId}, UserId={UserId}",
-                                issueId, dto.AssignedUserId);
-                        }
-                        else
-                        {
-                            _logger.LogWarning("LINE 通知發送失敗: IssueId={IssueId}, UserId={UserId}",
-                                issueId, dto.AssignedUserId);
-                        }
+                    if (success)
+                    {
+                        _logger.LogInformation("成功發送 LINE 通知: IssueId={IssueId}, UserId={UserId}, LineUserId={LineUserId}",
+                            issueId, issueDto.AssignedUserId, binding.LineUserId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("LINE 通知發送失敗: IssueId={IssueId}, UserId={UserId}",
+                            issueId, issueDto.AssignedUserId);
                     }
                 }
                 else
                 {
-                    _logger.LogDebug("處理人員未綁定 LINE 或狀態非 Active: UserId={UserId}", dto.AssignedUserId);
+                    _logger.LogDebug("處理人員未綁定 LINE 或狀態非 Active: UserId={UserId}, BindingStatus={BindingStatus}",
+                        issueDto.AssignedUserId, binding?.BindingStatus.ToString() ?? "null");
                 }
+            }
+            else
+            {
+                _logger.LogDebug("回報單未指派處理人員,跳過 LINE 通知: IssueId={IssueId}", issueId);
             }
         }
         catch (Exception ex)

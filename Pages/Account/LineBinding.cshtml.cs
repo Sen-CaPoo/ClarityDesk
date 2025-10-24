@@ -15,13 +15,16 @@ public class LineBindingModel : PageModel
 {
     private readonly ILineBindingService _lineBindingService;
     private readonly ILogger<LineBindingModel> _logger;
+    private readonly IConfiguration _configuration;
 
     public LineBindingModel(
         ILineBindingService lineBindingService,
-        ILogger<LineBindingModel> logger)
+        ILogger<LineBindingModel> logger,
+        IConfiguration configuration)
     {
         _lineBindingService = lineBindingService;
         _logger = logger;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -47,6 +50,17 @@ public class LineBindingModel : PageModel
     public string? ErrorMessage { get; set; }
 
     /// <summary>
+    /// 待加入好友提示
+    /// </summary>
+    [TempData]
+    public string? PendingAddFriend { get; set; }
+
+    /// <summary>
+    /// LINE 官方帳號加好友連結
+    /// </summary>
+    public string? AddFriendUrl { get; set; }
+
+    /// <summary>
     /// GET: 載入綁定狀態
     /// </summary>
     public async Task<IActionResult> OnGetAsync()
@@ -66,6 +80,19 @@ public class LineBindingModel : PageModel
 
             // 載入綁定資訊
             Binding = await _lineBindingService.GetBindingByUserIdAsync(userId);
+
+            // 從配置取得 LINE Bot Basic ID 以產生加好友連結
+            var botBasicId = _configuration["LineSettings:BotBasicId"];
+            if (!string.IsNullOrEmpty(botBasicId))
+            {
+                AddFriendUrl = $"https://line.me/R/ti/p/@{botBasicId}";
+            }
+
+            // 如果剛完成 OAuth 綁定,顯示加入好友提示
+            if (PendingAddFriend == "true" && Binding != null)
+            {
+                SuccessMessage = "LINE 帳號綁定成功!請記得加入 ClarityDesk 官方帳號為好友,才能接收推送通知。";
+            }
 
             return Page();
         }
@@ -127,6 +154,9 @@ public class LineBindingModel : PageModel
             ErrorMessage = "訪客帳號無法綁定 LINE 官方帳號";
             return RedirectToPage();
         }
+
+        // 儲存提示訊息到 TempData,在 OAuth 回調後顯示
+        TempData["PendingAddFriend"] = "true";
 
         // 觸發 LINE OAuth 流程
         var properties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties

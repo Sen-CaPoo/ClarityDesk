@@ -316,7 +316,7 @@ namespace ClarityDesk.Services
             {
                 Title = sessionData["title"].GetString() ?? string.Empty,
                 Content = sessionData["description"].GetString() ?? string.Empty,
-                RecordDate = DateTime.Now,
+                RecordDate = DateTime.UtcNow,
                 Status = IssueStatus.Pending,
                 Priority = Enum.Parse<PriorityLevel>(sessionData["urgency"].GetString() ?? "Medium"),
                 ReporterName = sessionData["contactName"].GetString() ?? string.Empty,

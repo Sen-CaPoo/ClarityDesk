@@ -89,7 +89,7 @@
                                         }
                                     </td>
                                     <td>
-                                        @dept.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd")
+                                        <taipei-time value="@dept.CreatedAt" format="yyyy-MM-dd" />
                                     </td>
                                     <td class="text-end">
                                         <a asp-page="./Edit" asp-route-id="@dept.Id" 

@@ -112,7 +112,7 @@
                                                     </span>
                                                 }
                                             </td>
-                                            <td>@user.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td>
+                                            <td><taipei-time value="@user.CreatedAt" format="yyyy/MM/dd HH:mm" /></td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
                                                     @if (user.Role == ClarityDesk.Models.Enums.UserRole.Admin)

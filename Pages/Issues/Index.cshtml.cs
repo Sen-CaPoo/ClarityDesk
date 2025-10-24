@@ -1,4 +1,5 @@
 using ClarityDesk.Data;
+using ClarityDesk.Infrastructure.Helpers;
 using ClarityDesk.Models.DTOs;
 using ClarityDesk.Models.Entities;
 using ClarityDesk.Models.Enums;
@@ -178,12 +179,12 @@ namespace ClarityDesk.Pages.Issues
                     worksheet.Cells[row, 4].Value = issue.ReporterName;
                     worksheet.Cells[row, 5].Value = issue.CustomerName;
                     worksheet.Cells[row, 6].Value = issue.CustomerPhone;
-                    worksheet.Cells[row, 7].Value = issue.RecordDate.ToString("yyyy/MM/dd HH:mm:ss");
+                    worksheet.Cells[row, 7].Value = TimeZoneHelper.ConvertToTaipeiTime(issue.RecordDate).ToString("yyyy/MM/dd HH:mm:ss");
                     worksheet.Cells[row, 8].Value = issue.PriorityText;
                     worksheet.Cells[row, 9].Value = issue.AssignedUserName;
                     worksheet.Cells[row, 10].Value = string.Join(", ", issue.DepartmentNames);
-                    worksheet.Cells[row, 11].Value = issue.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss");
-                    worksheet.Cells[row, 12].Value = issue.UpdatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss");
+                    worksheet.Cells[row, 11].Value = TimeZoneHelper.ConvertToTaipeiTime(issue.CreatedAt).ToString("yyyy/MM/dd HH:mm:ss");
+                    worksheet.Cells[row, 12].Value = TimeZoneHelper.ConvertToTaipeiTime(issue.UpdatedAt).ToString("yyyy/MM/dd HH:mm:ss");
                     worksheet.Cells[row, 13].Value = issue.LastModifiedByUserName ?? "";
                     worksheet.Cells[row, 14].Value = issue.Content; // 備註使用內容欄位
 
@@ -194,7 +195,7 @@ namespace ClarityDesk.Pages.Issues
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
                 // 產生檔案
-                var fileName = $"回報單列表_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                var fileName = $"回報單列表_{TimeZoneHelper.GetTaipeiNow():yyyyMMddHHmmss}.xlsx";
                 var fileBytes = package.GetAsByteArray();
 
                 return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
