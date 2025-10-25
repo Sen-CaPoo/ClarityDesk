@@ -227,23 +227,52 @@ namespace ClarityDesk.Services
 
                     // 開始新的對話
                     await _lineConversationService.StartConversationAsync(lineUserId, binding.UserId, cancellationToken);
-                    await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { "✍️ 請輸入問題標題 (5-100 個字元):" }, cancellationToken);
+                    await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { "✍️ 請輸入問題標題 (1-100 個字元):" }, cancellationToken);
                     return;
                 }
 
                 // 處理對話中的輸入
                 if (activeSession != null)
                 {
+                    // 特殊處理確認送出
+                    if (messageText.Trim() == "✅ 確認送出" || messageText.Trim() == "confirm")
+                    {
+                        try
+                        {
+                            var issueId = await _lineConversationService.CompleteConversationAsync(activeSession.Id, cancellationToken);
+                            await _lineMessagingService.ReplyMessageAsync(
+                                replyToken,
+                                new[] { $"✅ 回報單已成功建立!\n\n回報單編號: #{issueId}\n\n感謝您的回報,我們會儘快處理。" },
+                                cancellationToken);
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "建立回報單時發生錯誤: LineUserId={LineUserId}", lineUserId);
+                            await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { $"建立回報單時發生錯誤: {ex.Message}\n\n請稍後再試或聯繫管理員。" }, cancellationToken);
+                            return;
+                        }
+                    }
+
+                    // 特殊處理取消
+                    if (messageText.Trim() == "❌ 取消" || messageText.Trim() == "cancel")
+                    {
+                        await _lineConversationService.CancelConversationAsync(lineUserId, cancellationToken);
+                        await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { "已取消回報流程。" }, cancellationToken);
+                        return;
+                    }
+
                     var response = await _lineConversationService.ProcessUserInputAsync(lineUserId, messageText, cancellationToken);
 
                     if (response.IsValid)
                     {
-                        // 檢查是否完成對話
-                        if (response.NextStep == ConversationStep.AwaitingConfirmation)
+                        // 如果有 Quick Reply 選項，使用帶 Quick Reply 的回覆方法
+                        if (response.QuickReplyOptions != null && response.QuickReplyOptions.Any())
                         {
-                            await _lineMessagingService.ReplyMessageAsync(
+                            await _lineMessagingService.ReplyMessageWithQuickReplyAsync(
                                 replyToken,
-                                new[] { response.Message },
+                                response.Message,
+                                response.QuickReplyOptions,
                                 cancellationToken);
                         }
                         else
@@ -310,10 +339,29 @@ namespace ClarityDesk.Services
                     return;
                 }
 
-                // 處理其他 postback (例如單位選擇)
-                await _lineConversationService.ProcessUserInputAsync(lineUserId, postbackData, cancellationToken);
+                // 處理其他 postback (例如單位選擇、緊急程度選擇)
                 var response = await _lineConversationService.ProcessUserInputAsync(lineUserId, postbackData, cancellationToken);
-                await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { response.Message }, cancellationToken);
+                
+                if (response.IsValid)
+                {
+                    // 如果有 Quick Reply 選項,使用帶 Quick Reply 的回覆方法
+                    if (response.QuickReplyOptions != null && response.QuickReplyOptions.Any())
+                    {
+                        await _lineMessagingService.ReplyMessageWithQuickReplyAsync(
+                            replyToken,
+                            response.Message,
+                            response.QuickReplyOptions,
+                            cancellationToken);
+                    }
+                    else
+                    {
+                        await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { response.Message }, cancellationToken);
+                    }
+                }
+                else
+                {
+                    await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { response.Message }, cancellationToken);
+                }
             }
             catch (Exception ex)
             {

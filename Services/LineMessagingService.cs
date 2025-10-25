@@ -159,6 +159,34 @@ namespace ClarityDesk.Services
             }
         }
 
+        public async Task<bool> ReplyMessageWithQuickReplyAsync(
+            string replyToken,
+            string message,
+            IEnumerable<QuickReplyOption> quickReplyOptions,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // 建構 Quick Reply 項目 (最多 13 個)
+                var quickReplyItems = quickReplyOptions
+                    .Take(13)
+                    .Select(opt => new QuickReplyButtonObject(
+                        new MessageTemplateAction(opt.Label, opt.Data)))
+                    .ToList();
+
+                var quickReply = new Line.Messaging.QuickReply(quickReplyItems);
+                var textMessage = new TextMessage(message, quickReply);
+
+                await _lineClient.ReplyMessageAsync(replyToken, new List<ISendMessage> { textMessage });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "回覆訊息 (Quick Reply) 失敗: ReplyToken={ReplyToken}", replyToken);
+                return false;
+            }
+        }
+
         public async Task<bool> PushTextMessageAsync(
             string lineUserId,
             string message,

@@ -198,7 +198,7 @@ namespace ClarityDesk.UnitTests.Services
 
             // Assert
             result.IsValid.Should().BeFalse();
-            result.ErrorMessage.Should().Contain("手機號碼");
+            result.ErrorMessage.Should().Contain("電話號碼");
         }
 
         [Fact]

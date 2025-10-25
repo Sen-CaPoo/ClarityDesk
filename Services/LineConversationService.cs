@@ -157,55 +157,62 @@ namespace ClarityDesk.Services
 
                     // 取得單位列表
                     var departments = await _departmentService.GetAllDepartmentsAsync(activeOnly: true);
-                    var deptOptions = departments.Select(d => new QuickReplyOption { Label = d.Name, Data = $"dept_{d.Id}" }).ToList();
+                    var deptOptions = departments.Select(d => new QuickReplyOption { Label = d.Name, Data = d.Name }).ToList();
 
                     return (ConversationStep.AwaitingDepartment, "🏢 請選擇問題所屬單位:", deptOptions);
 
                 case ConversationStep.AwaitingDepartment:
-                    // 解析單位選擇 (格式: dept_1)
-                    if (userInput.StartsWith("dept_") && int.TryParse(userInput.Substring(5), out int deptId))
-                    {
-                        sessionData["departmentId"] = JsonSerializer.SerializeToElement(deptId);
-                    }
-                    else if (int.TryParse(userInput, out deptId))
-                    {
-                        sessionData["departmentId"] = JsonSerializer.SerializeToElement(deptId);
-                    }
-                    else
+                    // 儲存單位名稱並查詢對應的 ID
+                    var allDepartments = await _departmentService.GetAllDepartmentsAsync(activeOnly: true);
+                    var selectedDepartment = allDepartments.FirstOrDefault(d => d.Name == userInput);
+                    
+                    if (selectedDepartment == null)
                     {
                         throw new InvalidOperationException("無效的單位選擇");
                     }
+                    
+                    sessionData["departmentId"] = JsonSerializer.SerializeToElement(selectedDepartment.Id);
+                    sessionData["departmentName"] = JsonSerializer.SerializeToElement(selectedDepartment.Name);
                     session.SessionData = JsonSerializer.Serialize(sessionData);
 
                     var urgencyOptions = new List<QuickReplyOption>
                     {
-                        new() { Label = "🔴 高", Data = "High" },
-                        new() { Label = "🟡 中", Data = "Medium" },
-                        new() { Label = "🟢 低", Data = "Low" }
+                        new() { Label = "🔴 高", Data = "🔴 高" },
+                        new() { Label = "🟡 中", Data = "🟡 中" },
+                        new() { Label = "🟢 低", Data = "🟢 低" }
                     };
 
                     return (ConversationStep.AwaitingUrgency, "⚡ 請選擇緊急程度:", urgencyOptions);
 
                 case ConversationStep.AwaitingUrgency:
-                    sessionData["urgency"] = JsonSerializer.SerializeToElement(userInput);
+                    // 將中文顯示名稱對應到英文 enum 值
+                    var urgencyValue = userInput switch
+                    {
+                        "🔴 高" => "High",
+                        "🟡 中" => "Medium",
+                        "🟢 低" => "Low",
+                        _ => "Medium" // 預設值
+                    };
+                    sessionData["urgency"] = JsonSerializer.SerializeToElement(urgencyValue);
+                    sessionData["urgencyDisplay"] = JsonSerializer.SerializeToElement(userInput);
                     session.SessionData = JsonSerializer.Serialize(sessionData);
                     return (ConversationStep.AwaitingContactName, "👤 請輸入聯絡人姓名:", null);
 
                 case ConversationStep.AwaitingContactName:
                     sessionData["contactName"] = JsonSerializer.SerializeToElement(userInput);
                     session.SessionData = JsonSerializer.Serialize(sessionData);
-                    return (ConversationStep.AwaitingContactPhone, "📞 請輸入連絡電話 (格式: 09XX-XXXXXX):", null);
+                    return (ConversationStep.AwaitingContactPhone, "📞 請輸入連絡電話:", null);
 
                 case ConversationStep.AwaitingContactPhone:
                     sessionData["contactPhone"] = JsonSerializer.SerializeToElement(userInput);
                     session.SessionData = JsonSerializer.Serialize(sessionData);
 
                     // 產生摘要訊息
-                    var summary = await BuildSummaryMessageAsync(sessionData, cancellationToken);
+                    var summary = BuildSummaryMessage(sessionData);
                     var confirmOptions = new List<QuickReplyOption>
                     {
-                        new() { Label = "✅ 確認送出", Data = "confirm" },
-                        new() { Label = "❌ 取消", Data = "cancel" }
+                        new() { Label = "✅ 確認送出", Data = "✅ 確認送出" },
+                        new() { Label = "❌ 取消", Data = "❌ 取消" }
                     };
 
                     return (ConversationStep.AwaitingConfirmation, summary, confirmOptions);
@@ -215,33 +222,24 @@ namespace ClarityDesk.Services
             }
         }
 
-        private async Task<string> BuildSummaryMessageAsync(Dictionary<string, JsonElement> sessionData, CancellationToken cancellationToken)
+        private string BuildSummaryMessage(Dictionary<string, JsonElement> sessionData)
         {
             var title = sessionData["title"].GetString();
             var description = sessionData["description"].GetString();
-            var departmentId = sessionData["departmentId"].GetInt32();
-            var urgency = sessionData["urgency"].GetString();
+            var departmentName = sessionData["departmentName"].GetString();
+            var urgencyDisplay = sessionData["urgencyDisplay"].GetString();
             var contactName = sessionData["contactName"].GetString();
             var contactPhone = sessionData["contactPhone"].GetString();
 
-            var department = await _departmentService.GetDepartmentByIdAsync(departmentId);
-            var urgencyText = urgency switch
-            {
-                "High" => "🔴 高",
-                "Medium" => "🟡 中",
-                "Low" => "🟢 低",
-                _ => urgency
-            };
-
-            return $@"📋 **回報單摘要**
-
-**問題標題**: {title}
-**詳細內容**: {description}
-**所屬單位**: {department?.Name ?? "未知"}
-**緊急程度**: {urgencyText}
-**聯絡人**: {contactName}
-**連絡電話**: {contactPhone}
-
+            return $@"📋 回報單摘要
+────────────────────
+問題標題: {title}
+詳細內容: {description}
+所屬單位: {departmentName}
+緊急程度: {urgencyDisplay}
+聯絡人: {contactName}
+連絡電話: {contactPhone}
+────────────────────
 請確認以上資訊是否正確?";
         }
 
@@ -311,6 +309,22 @@ namespace ClarityDesk.Services
             var sessionData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(session.SessionData)
                 ?? throw new InvalidOperationException("Session 資料格式錯誤");
 
+            var departmentId = sessionData["departmentId"].GetInt32();
+
+            // 查詢單位的預設處理人員 (取第一個活躍使用者)
+            var defaultAssignedUserId = await _dbContext.DepartmentUsers
+                .Where(du => du.DepartmentId == departmentId)
+                .Join(_dbContext.Users,
+                    du => du.UserId,
+                    u => u.Id,
+                    (du, u) => new { du.UserId, u.IsActive })
+                .Where(x => x.IsActive)
+                .Select(x => x.UserId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            // 如果沒有預設處理人員，就使用建立回報單的使用者
+            var assignedUserId = defaultAssignedUserId > 0 ? defaultAssignedUserId : session.UserId;
+
             // 建立回報單 DTO
             var createDto = new CreateIssueReportDto
             {
@@ -322,8 +336,8 @@ namespace ClarityDesk.Services
                 ReporterName = sessionData["contactName"].GetString() ?? string.Empty,
                 CustomerName = sessionData["contactName"].GetString() ?? string.Empty,
                 CustomerPhone = sessionData["contactPhone"].GetString() ?? string.Empty,
-                AssignedUserId = session.UserId,
-                DepartmentIds = new List<int> { sessionData["departmentId"].GetInt32() }
+                AssignedUserId = assignedUserId,
+                DepartmentIds = new List<int> { departmentId }
             };
 
             // 建立回報單
@@ -364,16 +378,16 @@ namespace ClarityDesk.Services
             switch (step)
             {
                 case ConversationStep.AwaitingTitle:
-                    if (input.Length < 5 || input.Length > 100)
+                    if (input.Length < 1 || input.Length > 100)
                     {
-                        return new ValidationResult(false, "問題標題長度必須介於 5-100 個字元之間。");
+                        return new ValidationResult(false, "問題標題長度必須介於 1-100 個字元之間。");
                     }
                     break;
 
                 case ConversationStep.AwaitingDescription:
-                    if (input.Length < 10 || input.Length > 1000)
+                    if (input.Length < 1 || input.Length > 1000)
                     {
-                        return new ValidationResult(false, "問題描述長度必須介於 10-1000 個字元之間。");
+                        return new ValidationResult(false, "問題描述長度必須介於 1-1000 個字元之間。");
                     }
                     break;
 
@@ -385,10 +399,9 @@ namespace ClarityDesk.Services
                     break;
 
                 case ConversationStep.AwaitingContactPhone:
-                    var phone = input.Replace("-", "");
-                    if (!PhoneRegex.IsMatch(phone))
+                    if (input.Length < 7 || input.Length > 20)
                     {
-                        return new ValidationResult(false, "請輸入有效的台灣手機號碼 (格式: 09XX-XXXXXX 或 09XXXXXXXX)。");
+                        return new ValidationResult(false, "請輸入有效的電話號碼 (7-20 個字元)。");
                     }
                     break;
             }

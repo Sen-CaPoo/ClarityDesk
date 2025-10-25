@@ -35,6 +35,20 @@ namespace ClarityDesk.Services.Interfaces
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// 回覆使用者的訊息並帶 Quick Reply 按鈕 (Reply API,不計入配額)
+        /// </summary>
+        /// <param name="replyToken">LINE Platform 提供的回覆令牌</param>
+        /// <param name="message">訊息內容</param>
+        /// <param name="quickReplyOptions">快速回覆選項</param>
+        /// <param name="cancellationToken">取消令牌</param>
+        /// <returns>true: 回覆成功; false: 回覆失敗</returns>
+        Task<bool> ReplyMessageWithQuickReplyAsync(
+            string replyToken,
+            string message,
+            IEnumerable<QuickReplyOption> quickReplyOptions,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// 主動推送文字訊息給使用者
         /// </summary>
         /// <param name="lineUserId">目標 LINE 使用者 ID</param>
