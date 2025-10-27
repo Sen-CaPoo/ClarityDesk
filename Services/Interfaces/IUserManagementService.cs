@@ -44,4 +44,12 @@ public interface IUserManagementService
     /// <param name="role">角色</param>
     /// <returns>使用者清單</returns>
     Task<List<UserDto>> GetUsersByRoleAsync(UserRole role);
+
+    /// <summary>
+    /// 更新使用者資料
+    /// </summary>
+    /// <param name="userId">使用者 ID</param>
+    /// <param name="updateDto">更新資料 DTO</param>
+    /// <returns>更新是否成功</returns>
+    Task<bool> UpdateUserAsync(int userId, UpdateUserDto updateDto);
 }

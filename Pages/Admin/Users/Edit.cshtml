@@ -1,0 +1,146 @@
+@page
+@model ClarityDesk.Pages.Admin.Users.EditModel
+@{
+    ViewData["Title"] = "編輯使用者";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-page="/Admin/Users/Index">使用者權限管理</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">編輯使用者</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-fill-gear me-2"></i>編輯使用者資料
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- 使用者基本資訊 (唯讀) -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">基本資訊</h6>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(Model.UserData.PictureUrl))
+                                        {
+                                            <img src="@Model.UserData.PictureUrl" alt="@Model.UserData.DisplayName" 
+                                                 class="rounded-circle me-3" width="60" height="60">
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 60px; height: 60px;">
+                                                <i class="bi bi-person-fill text-white fs-3"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <p class="mb-1"><strong>LINE User ID:</strong> @Model.UserData.LineUserId</p>
+                                            <p class="mb-1">
+                                                <strong>角色:</strong>
+                                                @if (Model.UserData.Role == ClarityDesk.Models.Enums.UserRole.Admin)
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-shield-fill-check me-1"></i>管理人員
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-primary">
+                                                        <i class="bi bi-person-fill me-1"></i>普通使用者
+                                                    </span>
+                                                }
+                                            </p>
+                                            <p class="mb-0">
+                                                <strong>狀態:</strong>
+                                                @if (Model.UserData.IsActive)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>啟用
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">
+                                                        <i class="bi bi-x-circle-fill me-1"></i>停用
+                                                    </span>
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- 可編輯欄位 -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">可編輯資料</h6>
+                            
+                            <!-- 顯示名稱 -->
+                            <div class="mb-3">
+                                <label asp-for="Input.DisplayName" class="form-label">
+                                    顯示名稱 <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Input.DisplayName" class="form-control" placeholder="請輸入顯示名稱" />
+                                <span asp-validation-for="Input.DisplayName" class="text-danger"></span>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label asp-for="Input.Email" class="form-label">
+                                    電子信箱
+                                </label>
+                                <input asp-for="Input.Email" class="form-control" type="email" placeholder="請輸入電子信箱 (選填)" />
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>電子信箱為選填欄位,未來可用於通知功能
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作按鈕 -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-page="./Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-1"></i>取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>儲存變更
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 說明文字 -->
+            <div class="alert alert-info mt-3" role="alert">
+                <h6 class="alert-heading">
+                    <i class="bi bi-info-circle me-2"></i>編輯說明
+                </h6>
+                <ul class="mb-0">
+                    <li>LINE User ID、角色和狀態無法在此編輯</li>
+                    <li>若要變更角色或狀態,請返回使用者清單頁面操作</li>
+                    <li>顯示名稱為必填欄位,用於系統顯示使用者身份</li>
+                    <li>電子信箱為選填欄位,建議填寫以便未來接收系統通知</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

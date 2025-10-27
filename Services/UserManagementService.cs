@@ -29,14 +29,8 @@ public class UserManagementService : IUserManagementService
     /// </summary>
     public async Task<List<UserDto>> GetAllUsersAsync(bool includeInactive = false)
     {
-        var cacheKey = $"{UsersCacheKey}_{includeInactive}";
-
-        if (_cache != null && _cache.TryGetValue(cacheKey, out List<UserDto>? cachedUsers) && cachedUsers != null)
-        {
-            return cachedUsers;
-        }
-
-        var query = _context.Users.AsQueryable();
+        // 移除快取機制,直接從資料庫讀取以確保資料即時性
+        var query = _context.Users.AsNoTracking().AsQueryable();
 
         if (!includeInactive)
         {
@@ -47,8 +41,6 @@ public class UserManagementService : IUserManagementService
             .OrderByDescending(u => u.CreatedAt)
             .Select(u => u.ToDto())
             .ToListAsync();
-
-        _cache?.Set(cacheKey, users, CacheDuration);
 
         return users;
     }
@@ -116,6 +108,26 @@ public class UserManagementService : IUserManagementService
             .OrderBy(u => u.DisplayName)
             .Select(u => u.ToDto())
             .ToListAsync();
+    }
+
+    /// <summary>
+    /// 更新使用者資料
+    /// </summary>
+    public async Task<bool> UpdateUserAsync(int userId, UpdateUserDto updateDto)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.DisplayName = updateDto.DisplayName;
+        user.Email = updateDto.Email;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 
     /// <summary>

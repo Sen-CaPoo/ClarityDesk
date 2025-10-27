@@ -24,14 +24,17 @@
                             <h5 class="mb-0">使用者清單</h5>
                         </div>
                         <div class="col-md-6 text-end">
-                            <div class="form-check form-switch d-inline-block">
-                                <input class="form-check-input" type="checkbox" id="includeInactive" 
-                                       @(Model.IncludeInactive ? "checked" : "") 
-                                       onchange="this.form.submit()">
-                                <label class="form-check-label" for="includeInactive">
-                                    顯示停用使用者
-                                </label>
-                            </div>
+                            <form method="get" id="filterForm">
+                                <div class="form-check form-switch d-inline-block">
+                                    <input class="form-check-input" type="checkbox" id="includeInactive" 
+                                           name="IncludeInactive" value="true"
+                                           @(Model.IncludeInactive ? "checked" : "") 
+                                           onchange="this.form.submit()">
+                                    <label class="form-check-label" for="includeInactive">
+                                        顯示停用使用者
+                                    </label>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -115,6 +118,12 @@
                                             <td><taipei-time value="@user.CreatedAt" format="yyyy/MM/dd HH:mm" /></td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
+                                                    <!-- 編輯按鈕 -->
+                                                    <a asp-page="./Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-info">
+                                                        <i class="bi bi-pencil-square me-1"></i>編輯
+                                                    </a>
+
+                                                    <!-- 角色變更 -->
                                                     @if (user.Role == ClarityDesk.Models.Enums.UserRole.Admin)
                                                     {
                                                         <form method="post" asp-page-handler="UpdateRole" class="d-inline">
@@ -122,7 +131,7 @@
                                                             <input type="hidden" name="newRole" value="@((int)ClarityDesk.Models.Enums.UserRole.User)" />
                                                             <button type="submit" class="btn btn-sm btn-outline-primary" 
                                                                     onclick="return confirm('確定要將此使用者變更為普通使用者嗎?')">
-                                                                <i class="bi bi-arrow-down-circle me-1"></i>降級為普通使用者
+                                                                <i class="bi bi-arrow-down-circle me-1"></i>降級
                                                             </button>
                                                         </form>
                                                     }
@@ -133,12 +142,13 @@
                                                             <input type="hidden" name="newRole" value="@((int)ClarityDesk.Models.Enums.UserRole.Admin)" />
                                                             <button type="submit" class="btn btn-sm btn-outline-danger" 
                                                                     onclick="return confirm('確定要將此使用者升級為管理人員嗎?')">
-                                                                <i class="bi bi-arrow-up-circle me-1"></i>升級為管理人員
+                                                                <i class="bi bi-arrow-up-circle me-1"></i>升級
                                                             </button>
                                                         </form>
                                                     }
 
-                                                    <form method="post" asp-page-handler="ToggleActive" class="d-inline ms-2">
+                                                    <!-- 啟用/停用 -->
+                                                    <form method="post" asp-page-handler="ToggleActive" class="d-inline">
                                                         <input type="hidden" name="userId" value="@user.Id" />
                                                         <input type="hidden" name="isActive" value="@(!user.IsActive)" />
                                                         @if (user.IsActive)
