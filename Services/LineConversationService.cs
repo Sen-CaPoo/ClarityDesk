@@ -148,7 +148,7 @@ namespace ClarityDesk.Services
                 case ConversationStep.AwaitingTitle:
                     sessionData["title"] = JsonSerializer.SerializeToElement(userInput);
                     session.SessionData = JsonSerializer.Serialize(sessionData);
-                    return (ConversationStep.AwaitingDescription, "✍️ 請描述問題的詳細內容:", null);
+                    return (ConversationStep.AwaitingDescription, "✍️ 請描述問題的詳細內容：", null);
 
                 case ConversationStep.AwaitingDescription:
                     sessionData["description"] = JsonSerializer.SerializeToElement(userInput);
@@ -158,7 +158,7 @@ namespace ClarityDesk.Services
                     var departments = await _departmentService.GetAllDepartmentsAsync(activeOnly: true);
                     var deptOptions = departments.Select(d => new QuickReplyOption { Label = d.Name, Data = d.Name }).ToList();
 
-                    return (ConversationStep.AwaitingDepartment, "🏢 請選擇問題所屬單位:", deptOptions);
+                    return (ConversationStep.AwaitingDepartment, "🏢 請選擇問題所屬單位：", deptOptions);
 
                 case ConversationStep.AwaitingDepartment:
                     // 儲存單位名稱並查詢對應的 ID
@@ -181,7 +181,7 @@ namespace ClarityDesk.Services
                         new() { Label = "🟢 低", Data = "🟢 低" }
                     };
 
-                    return (ConversationStep.AwaitingUrgency, "⚡ 請選擇緊急程度:", urgencyOptions);
+                    return (ConversationStep.AwaitingUrgency, "⚡ 請選擇緊急程度：", urgencyOptions);
 
                 case ConversationStep.AwaitingUrgency:
                     // 將中文顯示名稱對應到英文 enum 值
@@ -195,12 +195,12 @@ namespace ClarityDesk.Services
                     sessionData["urgency"] = JsonSerializer.SerializeToElement(urgencyValue);
                     sessionData["urgencyDisplay"] = JsonSerializer.SerializeToElement(userInput);
                     session.SessionData = JsonSerializer.Serialize(sessionData);
-                    return (ConversationStep.AwaitingContactName, "👤 請輸入聯絡人姓名:", null);
+                    return (ConversationStep.AwaitingContactName, "👤 請輸入聯絡人姓名：", null);
 
                 case ConversationStep.AwaitingContactName:
                     sessionData["contactName"] = JsonSerializer.SerializeToElement(userInput);
                     session.SessionData = JsonSerializer.Serialize(sessionData);
-                    return (ConversationStep.AwaitingContactPhone, "📞 請輸入連絡電話:", null);
+                    return (ConversationStep.AwaitingContactPhone, "📞 請輸入連絡電話：", null);
 
                 case ConversationStep.AwaitingContactPhone:
                     sessionData["contactPhone"] = JsonSerializer.SerializeToElement(userInput);
@@ -232,14 +232,14 @@ namespace ClarityDesk.Services
 
             return $@"📋 回報單摘要
 ────────────────────
-問題標題: {title}
-詳細內容: {description}
-所屬單位: {departmentName}
-緊急程度: {urgencyDisplay}
-聯絡人: {contactName}
-連絡電話: {contactPhone}
+問題標題：{title}
+詳細內容：{description}
+所屬單位：{departmentName}
+緊急程度：{urgencyDisplay}
+聯絡人：{contactName}
+連絡電話：{contactPhone}
 ────────────────────
-請確認以上資訊是否正確?";
+請確認以上資訊是否正確？";
         }
 
         public async Task UpdateSessionDataAsync(

@@ -154,13 +154,13 @@ namespace ClarityDesk.Services
                 await _lineBindingService.UpdateLastInteractionAsync(lineUserId, cancellationToken);
 
                 // 發送歡迎訊息
-                var welcomeMessage = @"🎉 歡迎使用 ClarityDesk LINE 服務!
+                var welcomeMessage = @"🎉 歡迎使用 ClarityDesk LINE 服務！
 
-📝 您可以透過以下指令使用我們的服務:
+📝 您可以透過以下指令使用我們的服務：
 • 輸入「回報問題」開始建立問題回報單
 • 輸入「取消」取消目前的回報流程
 
-如需協助,請聯繫系統管理員。";
+如需協助，請聯繫系統管理員。";
 
                 await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { welcomeMessage }, cancellationToken);
             }
@@ -227,7 +227,7 @@ namespace ClarityDesk.Services
 
                     // 開始新的對話
                     await _lineConversationService.StartConversationAsync(lineUserId, binding.UserId, cancellationToken);
-                    await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { "✍️ 請輸入問題標題 (1-100 個字元):" }, cancellationToken);
+                    await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { "✍️ 請輸入問題標題 (1-100 個字元)：" }, cancellationToken);
                     return;
                 }
 
@@ -242,7 +242,7 @@ namespace ClarityDesk.Services
                             var issueId = await _lineConversationService.CompleteConversationAsync(activeSession.Id, cancellationToken);
                             await _lineMessagingService.ReplyMessageAsync(
                                 replyToken,
-                                new[] { $"✅ 回報單已成功建立!\n\n回報單編號: #{issueId}\n\n感謝您的回報,我們會儘快處理。" },
+                                new[] { $"✅ 回報單已成功建立!\n\n回報單編號：#{issueId}\n\n感謝您的回報，我們會儘快處理。" },
                                 cancellationToken);
                             return;
                         }
@@ -322,7 +322,7 @@ namespace ClarityDesk.Services
                     var issueId = await _lineConversationService.CompleteConversationAsync(activeSession.Id, cancellationToken);
                     await _lineMessagingService.ReplyMessageAsync(
                         replyToken,
-                        new[] { $"✅ 回報單已成功建立!\n\n回報單編號: #{issueId}\n\n感謝您的回報,我們會儘快處理。" },
+                        new[] { $"✅ 回報單已成功建立！\n\n回報單編號：#{issueId}\n\n感謝您的回報，我們會儘快處理。" },
                         cancellationToken);
                     return;
                 }

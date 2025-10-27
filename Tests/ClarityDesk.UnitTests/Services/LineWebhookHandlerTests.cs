@@ -242,7 +242,7 @@ namespace ClarityDesk.UnitTests.Services
             var conversationResponse = new Models.DTOs.ConversationResponse
             {
                 IsValid = true,
-                Message = "請描述問題的詳細內容:",
+                Message = "請描述問題的詳細內容：",
                 NextStep = ConversationStep.AwaitingDescription,
                 QuickReplyOptions = null
             };
