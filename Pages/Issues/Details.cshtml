@@ -4,188 +4,475 @@
     ViewData["Title"] = $"回報單詳情 #{Model.IssueReport?.Id}";
 }
 
-<div class="container">
+<style>
+    .detail-section {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .detail-section:hover {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-header {
+        background: #ffffff;
+        border-bottom: 2px solid #f3f4f6;
+        padding: 1.5rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .section-title {
+        color: #1f2937;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-body {
+        padding: 2rem 1.5rem;
+        background: #fafafa;
+    }
+
+    .info-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border-color: #d1d5db;
+    }
+
+    .info-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #374151;
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .info-row {
+        display: flex;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-label {
+        color: #6b7280;
+        font-weight: 500;
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+
+    .info-value {
+        color: #111827;
+        font-weight: 600;
+        flex-grow: 1;
+    }
+
+    .content-box {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .content-text {
+        color: #374151;
+        line-height: 1.8;
+        font-size: 1rem;
+        margin: 0;
+        white-space: pre-wrap;
+    }
+
+    .title-display {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 1rem 0 1.5rem 0;
+        padding: 1.25rem;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid #2563eb;
+        border-radius: 8px;
+    }
+
+    .department-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .department-badge {
+        background: #2563eb;
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+    .department-badge:hover {
+        background: #1d4ed8;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-badge-large {
+        padding: 0.6rem 1.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 6px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .phone-link {
+        color: #2563eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+
+    .phone-link:hover {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .metadata-section {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-top: 1.5rem;
+    }
+
+    .metadata-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .metadata-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .action-bar {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .btn-group-custom {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-custom {
+        padding: 0.625rem 1.5rem;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid transparent;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary.btn-custom {
+        background: #ffffff;
+        border-color: #d1d5db;
+        color: #374151;
+    }
+
+    .btn-secondary.btn-custom:hover {
+        background: #f9fafb;
+        border-color: #9ca3af;
+    }
+
+    .btn-warning.btn-custom {
+        background: #fbbf24;
+        border-color: #f59e0b;
+        color: #78350f;
+    }
+
+    .btn-warning.btn-custom:hover {
+        background: #f59e0b;
+        border-color: #d97706;
+    }
+
+    .btn-danger.btn-custom {
+        background: #ef4444;
+        border-color: #dc2626;
+        color: #ffffff;
+    }
+
+    .btn-danger.btn-custom:hover {
+        background: #dc2626;
+        border-color: #b91c1c;
+    }
+
+    @@media (max-width: 768px) {
+        .section-body {
+            padding: 1.5rem 1rem;
+        }
+
+        .info-row {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            min-width: unset;
+        }
+
+        .title-display {
+            font-size: 1.35rem;
+        }
+
+        .metadata-row {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .action-bar {
+            flex-direction: column;
+        }
+
+        .btn-group-custom {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-lg-10">
             @if (Model.IssueReport != null)
             {
                 <!-- 主要資訊卡片 -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0">
-                                <i class="bi bi-file-text"></i> 回報單詳情 #@Model.IssueReport.Id
-                            </h4>
-                            <div>
-                                @switch (Model.IssueReport.Status)
-                                {
-                                    case ClarityDesk.Models.Enums.IssueStatus.Pending:
-                                        <span class="badge bg-warning text-dark fs-6">未處理</span>
-                                        break;
-                                    case ClarityDesk.Models.Enums.IssueStatus.Completed:
-                                        <span class="badge bg-success fs-6">已處理</span>
-                                        break;
-                                }
-                            </div>
+                <div class="detail-section">
+                    <div class="section-header">
+                        <h4 class="section-title">
+                            <i class="bi bi-file-text-fill"></i>
+                            回報單詳情 #@Model.IssueReport.Id
+                        </h4>
+                        <div>
+                            @switch (Model.IssueReport.Status)
+                            {
+                                case ClarityDesk.Models.Enums.IssueStatus.Pending:
+                                    <span class="badge bg-warning text-dark status-badge-large">未處理</span>
+                                    break;
+                                case ClarityDesk.Models.Enums.IssueStatus.Completed:
+                                    <span class="badge bg-success status-badge-large">已處理</span>
+                                    break;
+                            }
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-4">
-                            <!-- 問題標題 -->
-                            <div class="col-12">
-                                <h5 class="text-primary mb-2">
-                                    <i class="bi bi-chat-left-text"></i> 問題標題
-                                </h5>
-                                <p class="fs-5 fw-bold">@Model.IssueReport.Title</p>
-                            </div>
+                    <div class="section-body">
+                        <!-- 問題標題 -->
+                        <div class="mb-4">
+                            <h5 style="color: #374151; font-weight: 600; margin-bottom: 0.75rem;">
+                                <i class="bi bi-chat-left-text-fill"></i> 問題標題
+                            </h5>
+                            <div class="title-display">@Model.IssueReport.Title</div>
+                        </div>
 
-                            <!-- 問題內容 -->
-                            <div class="col-12">
-                                <h5 class="text-primary mb-2">
-                                    <i class="bi bi-card-text"></i> 問題內容
-                                </h5>
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <p class="mb-0" style="white-space: pre-wrap;">@Model.IssueReport.Content</p>
-                                    </div>
-                                </div>
+                        <!-- 問題內容 -->
+                        <div class="mb-4">
+                            <h5 style="color: #374151; font-weight: 600; margin-bottom: 0.75rem;">
+                                <i class="bi bi-card-text"></i> 問題內容
+                            </h5>
+                            <div class="content-box">
+                                <p class="content-text">@Model.IssueReport.Content</p>
                             </div>
+                        </div>
 
+                        <!-- 基本資訊與顧客資訊 -->
+                        <div class="row g-3 mb-4">
                             <!-- 基本資訊 -->
                             <div class="col-md-6">
-                                <div class="card border-0 bg-light h-100">
-                                    <div class="card-body">
-                                        <h6 class="text-muted mb-3">
-                                            <i class="bi bi-info-circle"></i> 基本資訊
-                                        </h6>
-                                        <table class="table table-sm table-borderless mb-0">
-                                            <tbody>
-                                                <tr>
-                                                    <td class="text-muted" style="width: 40%;">紀錄日期：</td>
-                                                    <td><strong><taipei-time value="@Model.IssueReport.CreatedAt" format="yyyy/MM/dd HH:mm:ss" /></strong></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-muted">緊急程度：</td>
-                                                    <td>
-                                                        @await Component.InvokeAsync("PriorityBadge", Model.IssueReport.Priority)
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-muted">回報人：</td>
-                                                    <td><strong>@Model.IssueReport.ReporterName</strong></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-muted">指派人員：</td>
-                                                    <td><strong>@Model.IssueReport.AssignedUserName</strong></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                <div class="info-card">
+                                    <div class="info-card-header">
+                                        <i class="bi bi-info-circle-fill"></i>
+                                        基本資訊
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">紀錄日期：</span>
+                                        <span class="info-value">
+                                            <taipei-time value="@Model.IssueReport.CreatedAt" format="yyyy/MM/dd HH:mm:ss" />
+                                        </span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">緊急程度：</span>
+                                        <span class="info-value">
+                                            @await Component.InvokeAsync("PriorityBadge", Model.IssueReport.Priority)
+                                        </span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">回報人：</span>
+                                        <span class="info-value">@Model.IssueReport.ReporterName</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">指派人員：</span>
+                                        <span class="info-value">
+                                            <i class="bi bi-person-badge-fill text-primary"></i> @Model.IssueReport.AssignedUserName
+                                        </span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- 顧客資訊 -->
                             <div class="col-md-6">
-                                <div class="card border-0 bg-light h-100">
-                                    <div class="card-body">
-                                        <h6 class="text-muted mb-3">
-                                            <i class="bi bi-person"></i> 顧客資訊
-                                        </h6>
-                                        <table class="table table-sm table-borderless mb-0">
-                                            <tbody>
-                                                <tr>
-                                                    <td class="text-muted" style="width: 40%;">聯絡人：</td>
-                                                    <td><strong>@Model.IssueReport.CustomerName</strong></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-muted">連絡電話：</td>
-                                                    <td>
-                                                        <span id="customerPhone" class="text-decoration-none" style="cursor: pointer;" onclick="copyPhoneNumber()">
-                                                            <i class="bi bi-telephone"></i> @Model.IssueReport.CustomerPhone
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                <div class="info-card">
+                                    <div class="info-card-header">
+                                        <i class="bi bi-person-fill"></i>
+                                        顧客資訊
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">聯絡人：</span>
+                                        <span class="info-value">@Model.IssueReport.CustomerName</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">連絡電話：</span>
+                                        <span class="info-value">
+                                            <span id="customerPhone" class="phone-link" onclick="copyPhoneNumber()">
+                                                <i class="bi bi-telephone-fill"></i>
+                                                @Model.IssueReport.CustomerPhone
+                                            </span>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- 所屬單位 -->
-                            <div class="col-12">
-                                <h6 class="text-muted mb-2">
-                                    <i class="bi bi-building"></i> 問題所屬單位
-                                </h6>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @if (Model.IssueReport.DepartmentNames.Any())
+                        <!-- 所屬單位 -->
+                        <div class="mb-4">
+                            <h5 style="color: #374151; font-weight: 600; margin-bottom: 0.75rem;">
+                                <i class="bi bi-building"></i> 問題所屬單位
+                            </h5>
+                            <div class="department-badges">
+                                @if (Model.IssueReport.DepartmentNames.Any())
+                                {
+                                    @foreach (var deptName in Model.IssueReport.DepartmentNames)
                                     {
-                                        @foreach (var deptName in Model.IssueReport.DepartmentNames)
-                                        {
-                                            <span class="badge bg-secondary fs-6">@deptName</span>
-                                        }
+                                        <span class="department-badge">@deptName</span>
                                     }
-                                    else
-                                    {
-                                        <span class="text-muted">尚未指派單位</span>
-                                    }
-                                </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">尚未指派單位</span>
+                                }
                             </div>
+                        </div>
 
-                            <!-- 時間資訊 -->
-                            <div class="col-12">
-                                <hr />
-                                <div class="row text-muted small">
-                                    <div class="col-md-4">
-                                        <i class="bi bi-clock"></i> 建立時間：<taipei-time value="@Model.IssueReport.CreatedAt" format="yyyy/MM/dd HH:mm:ss" />
-                                    </div>
-                                    <div class="col-md-4 text-md-center">
-                                        <i class="bi bi-clock-history"></i> 最後修改：@Model.IssueReport.UpdatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")
-                                    </div>
-                                    <div class="col-md-4 text-md-end">
-                                        @if (Model.IssueReport.LastModifiedByUserName != null)
-                                        {
-                                            <i class="bi bi-person"></i> <text>最後修改人：</text>@Model.IssueReport.LastModifiedByUserName
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">尚未修改</span>
-                                        }
-                                    </div>
+                        <!-- 時間資訊 -->
+                        <div class="metadata-section">
+                            <div class="metadata-row">
+                                <div class="metadata-item">
+                                    <i class="bi bi-clock"></i>
+                                    <span>建立時間：<strong><taipei-time value="@Model.IssueReport.CreatedAt" format="yyyy/MM/dd HH:mm:ss" /></strong></span>
                                 </div>
+                                <div class="metadata-item">
+                                    <i class="bi bi-clock-history"></i>
+                                    <span>最後修改：<strong>@Model.IssueReport.UpdatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss")</strong></span>
+                                </div>
+                                @if (Model.IssueReport.LastModifiedByUserName != null)
+                                {
+                                    <div class="metadata-item">
+                                        <i class="bi bi-person-check"></i>
+                                        <span>最後修改人：<strong>@Model.IssueReport.LastModifiedByUserName</strong></span>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 操作按鈕 -->
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <a asp-page="Index" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left"></i> 返回列表
-                                </a>
-                                <a asp-page="Edit" asp-route-id="@Model.IssueReport.Id" class="btn btn-warning">
-                                    <i class="bi bi-pencil"></i> 編輯
-                                </a>
-                            </div>
-                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('確定要刪除此回報單嗎？此操作無法復原。');">
-                                <input type="hidden" name="id" value="@Model.IssueReport.Id" />
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="bi bi-trash"></i> 刪除
-                                </button>
-                            </form>
-                        </div>
+                <div class="action-bar">
+                    <div class="btn-group-custom">
+                        <a asp-page="Index" class="btn btn-secondary btn-custom">
+                            <i class="bi bi-arrow-left"></i> 返回列表
+                        </a>
+                        <a asp-page="Edit" asp-route-id="@Model.IssueReport.Id" class="btn btn-warning btn-custom">
+                            <i class="bi bi-pencil-fill"></i> 編輯
+                        </a>
                     </div>
+                    <form method="post" asp-page-handler="Delete" onsubmit="return confirm('確定要刪除此回報單嗎？此操作無法復原。');">
+                        <input type="hidden" name="id" value="@Model.IssueReport.Id" />
+                        <button type="submit" class="btn btn-danger btn-custom">
+                            <i class="bi bi-trash-fill"></i> 刪除
+                        </button>
+                    </form>
                 </div>
             }
             else
             {
-                <div class="alert alert-warning" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    找不到指定的回報單。
+                <div class="alert alert-warning shadow" role="alert" style="border-radius: 12px; padding: 1.5rem;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 2rem; margin-right: 1rem;"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">找不到回報單</h5>
+                            <p class="mb-0">指定的回報單不存在或已被刪除。</p>
+                        </div>
+                    </div>
                 </div>
-                <a asp-page="Index" class="btn btn-secondary">
+                <a asp-page="Index" class="btn btn-secondary btn-custom">
                     <i class="bi bi-arrow-left"></i> 返回列表
                 </a>
             }
@@ -196,13 +483,13 @@
 <script>
     function copyPhoneNumber() {
         const phoneElement = document.getElementById('customerPhone');
-        const phoneNumber = '@(Model.IssueReport.CustomerPhone ?? "")';
+        const phoneNumber = '@(Model.IssueReport?.CustomerPhone ?? "")';
         
         // 使用 Clipboard API 複製電話號碼
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(phoneNumber).then(function() {
                 // 顯示成功訊息
-                showCopyMessage('已複製電話');
+                showCopyMessage('已複製電話號碼到剪貼簿', 'success');
             }).catch(function(err) {
                 // 如果失敗，嘗試使用舊方法
                 fallbackCopyTextToClipboard(phoneNumber);
@@ -227,12 +514,12 @@
         try {
             const successful = document.execCommand('copy');
             if (successful) {
-                showCopyMessage('已複製電話');
+                showCopyMessage('已複製電話號碼到剪貼簿', 'success');
             } else {
-                showCopyMessage('複製失敗，請手動複製', 'danger');
+                showCopyMessage('複製失敗，請手動複製', 'warning');
             }
         } catch (err) {
-            showCopyMessage('複製失敗，請手動複製', 'danger');
+            showCopyMessage('複製失敗，請手動複製', 'warning');
         }
         
         document.body.removeChild(textArea);
@@ -253,10 +540,20 @@
         alertDiv.style.top = '20px';
         alertDiv.style.right = '20px';
         alertDiv.style.zIndex = '9999';
-        alertDiv.style.minWidth = '200px';
+        alertDiv.style.minWidth = '250px';
+        alertDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        alertDiv.style.borderRadius = '10px';
+        
+        let icon = 'check-circle-fill';
+        if (type === 'warning') icon = 'exclamation-triangle-fill';
+        else if (type === 'danger') icon = 'x-circle-fill';
+        
         alertDiv.innerHTML = `
-            <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${icon}" style="font-size: 1.5rem; margin-right: 0.75rem;"></i>
+                <span style="font-weight: 500;">${message}</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" style="font-size: 0.75rem;"></button>
         `;
         
         document.body.appendChild(alertDiv);
@@ -270,3 +567,4 @@
         }, 3000);
     }
 </script>
+
