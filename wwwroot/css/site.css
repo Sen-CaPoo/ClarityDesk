@@ -238,3 +238,161 @@ main {
 .shadow-lg {
     box-shadow: var(--box-shadow-lg) !important;
 }
+
+/* ===================================
+   篩選器卡片樣式
+   =================================== */
+
+/* 篩選選項卡片容器 */
+.filter-option-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    background-color: var(--background-color);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    min-height: 3rem;
+    margin-bottom: 0.75rem;
+}
+
+/* 懸停效果 */
+.filter-option-card:hover {
+    border-color: var(--primary-color);
+    background-color: #f0f9ff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+    transform: translateY(-1px);
+}
+
+/* 隱藏原生 checkbox */
+.filter-option-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* 選中狀態樣式 */
+.filter-option-card input[type="checkbox"]:checked ~ .filter-option-content {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.filter-option-card input[type="checkbox"]:checked + .filter-checkmark {
+    opacity: 1;
+}
+
+.filter-option-card:has(input[type="checkbox"]:checked) {
+    border-color: var(--primary-color);
+    background-color: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* 勾選標記 */
+.filter-checkmark {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.filter-checkmark::after {
+    content: '\2713';
+    color: white;
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+/* 選項內容容器 */
+.filter-option-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    transition: all 0.2s ease;
+    pointer-events: none;
+}
+
+/* 圖示樣式 */
+.filter-option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    background-color: var(--card-background);
+    color: var(--primary-color);
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+    font-size: 1.125rem;
+    transition: all 0.2s ease;
+}
+
+.filter-option-card:hover .filter-option-icon {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-option-card:has(input[type="checkbox"]:checked) .filter-option-icon {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* 文字標籤 */
+.filter-option-label {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+    word-break: break-word;
+    flex: 1;
+}
+
+/* 篩選器分區標題 */
+.filter-section-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-section-title i {
+    color: var(--primary-color);
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .filter-option-card {
+        padding: 0.625rem 0.875rem;
+        min-height: 2.75rem;
+    }
+    
+    .filter-option-icon {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 1rem;
+        margin-right: 0.625rem;
+    }
+    
+    .filter-option-label {
+        font-size: 0.875rem;
+    }
+    
+    .filter-checkmark {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+}

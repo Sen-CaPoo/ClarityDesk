@@ -76,46 +76,74 @@
                     </div>
 
                     <!-- 問題所屬單位 -->
-                    <div class="col-md-4">
-                        <label class="form-label">問題所屬單位</label>
+                    <div class="col-12">
+                        <div class="filter-section-title">
+                            <i class="bi bi-building"></i>
+                            <span>問題所屬單位</span>
+                        </div>
                         @if (Model.Departments != null && Model.Departments.Any())
                         {
-                            @foreach (var dept in Model.Departments)
-                            {
-                                <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="Filter.DepartmentIds" 
-                                           value="@dept.Id" 
-                                           id="dept_@dept.Id"
-                                           checked="@(Model.Filter.DepartmentIds?.Contains(dept.Id) == true)">
-                                    <label class="form-check-label" for="dept_@dept.Id">
-                                        @dept.Name
-                                    </label>
-                                </div>
-                            }
+                            <div class="row g-3">
+                                @foreach (var dept in Model.Departments)
+                                {
+                                    <div class="col-xxl-2 col-xl-3 col-lg-4 col-md-6 col-6">
+                                        <label class="filter-option-card" for="dept_@dept.Id">
+                                            <input type="checkbox" 
+                                                   name="Filter.DepartmentIds" 
+                                                   value="@dept.Id" 
+                                                   id="dept_@dept.Id"
+                                                   checked="@(Model.Filter.DepartmentIds?.Contains(dept.Id) == true)">
+                                            <span class="filter-checkmark"></span>
+                                            <div class="filter-option-content">
+                                                <span class="filter-option-icon">
+                                                    <i class="bi bi-building"></i>
+                                                </span>
+                                                <span class="filter-option-label">@dept.Name</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">目前沒有可篩選的單位</p>
                         }
                     </div>
 
                     <!-- 指派處理人員 -->
-                    <div class="col-md-4">
-                        <label class="form-label">指派處理人員</label>
+                    <div class="col-12">
+                        <div class="filter-section-title">
+                            <i class="bi bi-person-circle"></i>
+                            <span>指派處理人員</span>
+                        </div>
                         @if (Model.Users != null && Model.Users.Any())
                         {
-                            @foreach (var user in Model.Users)
-                            {
-                                <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="Filter.AssignedUserIds" 
-                                           value="@user.Id" 
-                                           id="user_@user.Id"
-                                           checked="@(Model.Filter.AssignedUserIds?.Contains(user.Id) == true)">
-                                    <label class="form-check-label" for="user_@user.Id">
-                                        @user.DisplayName
-                                    </label>
-                                </div>
-                            }
+                            <div class="row g-2">
+                                @foreach (var user in Model.Users)
+                                {
+                                    <div class="col-xxl-2 col-xl-2 col-lg-3 col-md-4 col-sm-6 col-6">
+                                        <label class="filter-option-card" for="user_@user.Id">
+                                            <input type="checkbox" 
+                                                   name="Filter.AssignedUserIds" 
+                                                   value="@user.Id" 
+                                                   id="user_@user.Id"
+                                                   checked="@(Model.Filter.AssignedUserIds?.Contains(user.Id) == true)">
+                                            <span class="filter-checkmark"></span>
+                                            <div class="filter-option-content">
+                                                <span class="filter-option-icon">
+                                                    <i class="bi bi-person-circle"></i>
+                                                </span>
+                                                <span class="filter-option-label">@user.DisplayName</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">目前沒有可篩選的人員</p>
                         }
                     </div>
 
