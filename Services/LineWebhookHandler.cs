@@ -288,11 +288,7 @@ namespace ClarityDesk.Services
                         await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { response.Message }, cancellationToken);
                     }
                 }
-                else
-                {
-                    // 沒有進行中的對話,提示如何開始
-                    await _lineMessagingService.ReplyMessageAsync(replyToken, new[] { "請輸入「回報問題」開始建立問題回報單。" }, cancellationToken);
-                }
+                // 沒有進行中的對話且非特殊指令時,不做任何動作
             }
             catch (Exception ex)
             {
