@@ -428,11 +428,11 @@ public class IssueReportService : IIssueReportService
     }
 
     /// <inheritdoc />
-    public async Task<bool> UpdateIssueStatusAsync(int id, IssueStatus newStatus, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateIssueStatusAsync(int id, IssueStatus newStatus, int currentUserId, CancellationToken cancellationToken = default)
     {
         try
         {
-            _logger.LogInformation("更新回報單狀態, ID: {IssueId}, 新狀態: {Status}", id, newStatus);
+            _logger.LogInformation("更新回報單狀態, ID: {IssueId}, 新狀態: {Status}, 修改人: {UserId}", id, newStatus, currentUserId);
 
             var issue = await _context.IssueReports
                 .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
@@ -445,6 +445,7 @@ public class IssueReportService : IIssueReportService
 
             issue.Status = newStatus;
             issue.UpdatedAt = DateTime.UtcNow;
+            issue.LastModifiedByUserId = currentUserId;
 
             await _context.SaveChangesAsync(cancellationToken);
 

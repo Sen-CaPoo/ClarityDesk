@@ -355,4 +355,88 @@ public class IssueReportServiceTests
         result.CompletedIssues.Should().Be(2);
         result.HighPriorityIssues.Should().Be(1);
     }
+
+    [Fact]
+    public async Task UpdateIssueStatusAsync_ValidIdAndStatus_UpdatesStatusSuccessfully()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var service = CreateService(context);
+        
+        var issue = new IssueReport
+        {
+            Title = "測試回報單",
+            Content = "測試內容,超過10個字元",
+            RecordDate = DateTime.Today,
+            Status = IssueStatus.Pending,
+            Priority = PriorityLevel.Medium,
+            ReporterName = "回報人",
+            CustomerName = "顧客",
+            CustomerPhone = "0911111111",
+            AssignedUserId = 1,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        context.IssueReports.Add(issue);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.UpdateIssueStatusAsync(issue.Id, IssueStatus.Completed, currentUserId: 1);
+
+        // Assert
+        result.Should().BeTrue();
+        var updatedIssue = await context.IssueReports.FindAsync(issue.Id);
+        updatedIssue.Should().NotBeNull();
+        updatedIssue!.Status.Should().Be(IssueStatus.Completed);
+        updatedIssue.LastModifiedByUserId.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task UpdateIssueStatusAsync_InvalidId_ReturnsFalse()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var service = CreateService(context);
+
+        // Act
+        var result = await service.UpdateIssueStatusAsync(999, IssueStatus.Completed, currentUserId: 1);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpdateIssueStatusAsync_ToggleFromCompletedToPending_UpdatesStatusSuccessfully()
+    {
+        // Arrange
+        using var context = CreateDbContext();
+        var service = CreateService(context);
+        
+        var issue = new IssueReport
+        {
+            Title = "已處理的回報單",
+            Content = "測試內容,超過10個字元",
+            RecordDate = DateTime.Today,
+            Status = IssueStatus.Completed,
+            Priority = PriorityLevel.Medium,
+            ReporterName = "回報人",
+            CustomerName = "顧客",
+            CustomerPhone = "0911111111",
+            AssignedUserId = 1,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        context.IssueReports.Add(issue);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.UpdateIssueStatusAsync(issue.Id, IssueStatus.Pending, currentUserId: 1);
+
+        // Assert
+        result.Should().BeTrue();
+        var updatedIssue = await context.IssueReports.FindAsync(issue.Id);
+        updatedIssue.Should().NotBeNull();
+        updatedIssue!.Status.Should().Be(IssueStatus.Pending);
+        updatedIssue.LastModifiedByUserId.Should().Be(1);
+    }
 }

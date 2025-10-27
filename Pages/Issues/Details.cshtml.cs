@@ -102,5 +102,60 @@ namespace ClarityDesk.Pages.Issues
                 return RedirectToPage("Details", new { id });
             }
         }
+
+        /// <summary>
+        /// 快速調整回報單狀態
+        /// </summary>
+        public async Task<IActionResult> OnPostToggleStatusAsync(int id)
+        {
+            try
+            {
+                _logger.LogInformation("快速調整回報單狀態，ID: {IssueId}", id);
+
+                // 取得當前使用者 ID
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+                {
+                    _logger.LogError("無法取得當前使用者 ID");
+                    TempData["ErrorMessage"] = "系統錯誤，無法識別使用者身份。";
+                    return RedirectToPage("Details", new { id });
+                }
+
+                // 先取得目前狀態
+                var issue = await _issueReportService.GetIssueReportByIdAsync(id);
+                if (issue == null)
+                {
+                    _logger.LogWarning("找不到回報單，ID: {IssueId}", id);
+                    TempData["ErrorMessage"] = "找不到指定的回報單。";
+                    return RedirectToPage("Index");
+                }
+
+                // 切換狀態: 未處理 ⇄ 已處理
+                var newStatus = issue.Status == Models.Enums.IssueStatus.Pending 
+                    ? Models.Enums.IssueStatus.Completed 
+                    : Models.Enums.IssueStatus.Pending;
+
+                bool success = await _issueReportService.UpdateIssueStatusAsync(id, newStatus, currentUserId);
+                
+                if (!success)
+                {
+                    _logger.LogWarning("更新回報單狀態失敗，ID: {IssueId}", id);
+                    TempData["ErrorMessage"] = "更新回報單狀態失敗。";
+                    return RedirectToPage("Details", new { id });
+                }
+
+                var statusText = newStatus == Models.Enums.IssueStatus.Completed ? "已處理" : "未處理";
+                _logger.LogInformation("成功更新回報單狀態為 {Status}，ID: {IssueId}", statusText, id);
+                TempData["SuccessMessage"] = $"回報單狀態已更新為「{statusText}」！";
+
+                return RedirectToPage("Details", new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "快速調整回報單狀態時發生錯誤，ID: {IssueId}", id);
+                TempData["ErrorMessage"] = "更新回報單狀態時發生錯誤，請稍後再試。";
+                return RedirectToPage("Details", new { id });
+            }
+        }
     }
 }

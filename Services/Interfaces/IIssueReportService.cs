@@ -69,9 +69,10 @@ public interface IIssueReportService
     /// </summary>
     /// <param name="id">回報單 ID</param>
     /// <param name="newStatus">新狀態</param>
+    /// <param name="currentUserId">當前使用者 ID (用於記錄最後修改人)</param>
     /// <param name="cancellationToken">取消權杖</param>
     /// <returns>是否更新成功</returns>
-    Task<bool> UpdateIssueStatusAsync(int id, IssueStatus newStatus, CancellationToken cancellationToken = default);
+    Task<bool> UpdateIssueStatusAsync(int id, IssueStatus newStatus, int currentUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 指派回報單給使用者

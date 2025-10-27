@@ -238,6 +238,17 @@
         border-color: #9ca3af;
     }
 
+    .btn-success.btn-custom {
+        background: #10b981;
+        border-color: #059669;
+        color: #ffffff;
+    }
+
+    .btn-success.btn-custom:hover {
+        background: #059669;
+        border-color: #047857;
+    }
+
     .btn-warning.btn-custom {
         background: #fbbf24;
         border-color: #f59e0b;
@@ -247,6 +258,17 @@
     .btn-warning.btn-custom:hover {
         background: #f59e0b;
         border-color: #d97706;
+    }
+
+    .btn-success.btn-custom {
+        background: #10b981;
+        border-color: #059669;
+        color: #ffffff;
+    }
+
+    .btn-success.btn-custom:hover {
+        background: #059669;
+        border-color: #047857;
     }
 
     .btn-danger.btn-custom {
@@ -449,11 +471,29 @@
                         <a asp-page="Index" class="btn btn-secondary btn-custom">
                             <i class="bi bi-arrow-left"></i> 返回列表
                         </a>
+                        @if (Model.IssueReport.Status == ClarityDesk.Models.Enums.IssueStatus.Pending)
+                        {
+                            <form method="post" asp-page-handler="ToggleStatus" style="display: inline;">
+                                <input type="hidden" name="id" value="@Model.IssueReport.Id" />
+                                <button type="submit" class="btn btn-success btn-custom" title="快速將此回報單標記為已處理">
+                                    <i class="bi bi-check-circle-fill"></i> 標記為已處理
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" asp-page-handler="ToggleStatus" style="display: inline;">
+                                <input type="hidden" name="id" value="@Model.IssueReport.Id" />
+                                <button type="submit" class="btn btn-warning btn-custom" title="快速將此回報單標記為未處理">
+                                    <i class="bi bi-arrow-counterclockwise"></i> 標記為未處理
+                                </button>
+                            </form>
+                        }
                         <a asp-page="Edit" asp-route-id="@Model.IssueReport.Id" class="btn btn-warning btn-custom">
                             <i class="bi bi-pencil-fill"></i> 編輯
                         </a>
                     </div>
-                    <form method="post" asp-page-handler="Delete" onsubmit="return confirm('確定要刪除此回報單嗎？此操作無法復原。');">
+                    <form method="post" asp-page-handler="Delete" onsubmit="return confirm('確定要刪除此回報單嗎?此操作無法復原。');">
                         <input type="hidden" name="id" value="@Model.IssueReport.Id" />
                         <button type="submit" class="btn btn-danger btn-custom">
                             <i class="bi bi-trash-fill"></i> 刪除

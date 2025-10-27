@@ -94,16 +94,16 @@ namespace ClarityDesk.Services
                 var summaryText = 
                     $"【新問題回報】您有一則新的問題待處理\n" +
                     $"━━━━━━━━━━━━━━━━━━━━\n" +
-                    $"📋 回報單編號:{issueNumberStr}\n" +
-                    $"📌 問題標題:{issueReport.Title}\n" +
-                    $"{priorityEmoji} 緊急程度:{issueReport.PriorityText}\n" +
-                    $"🏢 問題所屬單位:{departmentsStr}\n" +
-                    $"👤 聯絡人:{issueReport.CustomerName}\n" +
-                    $"📞 連絡電話:{issueReport.CustomerPhone}\n" +
-                    $"📅 紀錄日期:{recordDateStr}\n" +
-                    $"✍️ 回報人:{issueReport.ReporterName}\n" +
+                    $"📋 回報單編號：{issueNumberStr}\n" +
+                    $"📌 問題標題：{issueReport.Title}\n" +
+                    $"{priorityEmoji} 緊急程度：{issueReport.PriorityText}\n" +
+                    $"🏢 問題所屬單位：{departmentsStr}\n" +
+                    $"👤 聯絡人：{issueReport.CustomerName}\n" +
+                    $"📞 連絡電話：{issueReport.CustomerPhone}\n" +
+                    $"📅 紀錄日期：{recordDateStr}\n" +
+                    $"✍️ 回報人：{issueReport.ReporterName}\n" +
                     $"━━━━━━━━━━━━━━━━━━━━\n" +
-                    $"[查看回報單詳情] 👉 {detailsUrl}";
+                    $"【查看回報單詳情】👉 {detailsUrl}";
                 
                 var messages = new List<ISendMessage> { new TextMessage(summaryText) };
 
