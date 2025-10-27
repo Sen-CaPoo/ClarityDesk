@@ -40,7 +40,9 @@ public class LoginModel : PageModel
         var redirectUrl = returnUrl ?? Url.Page("/Index");
         var properties = new AuthenticationProperties
         {
-            RedirectUri = redirectUrl
+            RedirectUri = redirectUrl,
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddDays(365)
         };
 
         return Challenge(properties, "LINE");
