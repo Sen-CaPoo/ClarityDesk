@@ -59,8 +59,7 @@ public class CreateIssueReportDto
     /// 顧客連絡電話
     /// </summary>
     [Required(ErrorMessage = "顧客電話為必填欄位")]
-    [Phone(ErrorMessage = "請輸入有效的電話號碼")]
-    [StringLength(20, ErrorMessage = "電話號碼不可超過 20 字元")]
+    [StringLength(50, ErrorMessage = "電話號碼不可超過 50 字元")]
     public string CustomerPhone { get; set; } = string.Empty;
 
     /// <summary>

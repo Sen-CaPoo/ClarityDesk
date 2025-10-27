@@ -21,7 +21,6 @@ namespace ClarityDesk.Services
         private readonly IIssueReportService _issueReportService;
         private readonly IDepartmentService _departmentService;
         private static readonly TimeSpan SessionTimeout = TimeSpan.FromMinutes(30);
-        private static readonly Regex PhoneRegex = new(@"^09\d{2}-?\d{6}$", RegexOptions.Compiled);
 
         public LineConversationService(
             ApplicationDbContext dbContext,
@@ -399,9 +398,9 @@ namespace ClarityDesk.Services
                     break;
 
                 case ConversationStep.AwaitingContactPhone:
-                    if (input.Length < 7 || input.Length > 20)
+                    if (input.Length < 1 || input.Length > 50)
                     {
-                        return new ValidationResult(false, "請輸入有效的電話號碼 (7-20 個字元)。");
+                        return new ValidationResult(false, "電話號碼長度必須介於 1-50 個字元之間。");
                     }
                     break;
             }
