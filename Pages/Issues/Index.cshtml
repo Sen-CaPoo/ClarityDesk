@@ -131,8 +131,15 @@
                                                    checked="@(Model.Filter.AssignedUserIds?.Contains(user.Id) == true)">
                                             <span class="filter-checkmark"></span>
                                             <div class="filter-option-content">
-                                                <span class="filter-option-icon">
-                                                    <i class="bi bi-person-circle"></i>
+                                                <span class="filter-option-icon @(string.IsNullOrEmpty(user.PictureUrl) ? "" : "with-avatar")">
+                                                    @if (!string.IsNullOrEmpty(user.PictureUrl))
+                                                    {
+                                                        <img src="@user.PictureUrl" alt="@user.DisplayName" class="user-avatar" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-person-circle"></i>
+                                                    }
                                                 </span>
                                                 <span class="filter-option-label">@user.DisplayName</span>
                                             </div>
