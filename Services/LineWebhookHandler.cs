@@ -242,7 +242,7 @@ namespace ClarityDesk.Services
                             var issueId = await _lineConversationService.CompleteConversationAsync(activeSession.Id, cancellationToken);
                             await _lineMessagingService.ReplyMessageAsync(
                                 replyToken,
-                                new[] { $"✅ 回報單已成功建立!\n\n回報單編號：#{issueId}\n\n感謝您的回報，我們會儘快處理。" },
+                                new[] { $"✅ 回報單已成功建立！\n\n回報單編號：#{issueId}\n\n感謝您的回報，我們會儘快處理。" },
                                 cancellationToken);
                             return;
                         }
