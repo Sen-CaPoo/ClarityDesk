@@ -45,20 +45,41 @@
 
                             <!-- 處理狀態 -->
                             <div class="col-md-4">
-                                <label asp-for="IssueReport.Status" class="form-label">處理狀態 <span class="text-danger">*</span></label>
-                                <select asp-for="IssueReport.Status" class="form-select" asp-items="Html.GetEnumSelectList<ClarityDesk.Models.Enums.IssueStatus>()">
-                                    <option value="">-- 請選擇 --</option>
-                                </select>
-                                <span asp-validation-for="IssueReport.Status" class="text-danger"></span>
+                                <label class="form-label d-block mb-2">處理狀態 <span class="text-danger">*</span></label>
+                                <div class="btn-group w-100" role="group" aria-label="處理狀態選擇">
+                                    <input type="radio" class="btn-check" name="IssueReport.Status" id="statusPending" value="Pending" checked autocomplete="off">
+                                    <label class="btn btn-outline-warning" for="statusPending">
+                                        <i class="bi bi-hourglass-split"></i> 未處理
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="IssueReport.Status" id="statusCompleted" value="Completed" autocomplete="off">
+                                    <label class="btn btn-outline-success" for="statusCompleted">
+                                        <i class="bi bi-check-circle"></i> 已處理
+                                    </label>
+                                </div>
+                                <span asp-validation-for="IssueReport.Status" class="text-danger d-block mt-1"></span>
                             </div>
 
                             <!-- 緊急程度 -->
                             <div class="col-md-4">
-                                <label asp-for="IssueReport.Priority" class="form-label">緊急程度 <span class="text-danger">*</span></label>
-                                <select asp-for="IssueReport.Priority" class="form-select" asp-items="Html.GetEnumSelectList<ClarityDesk.Models.Enums.PriorityLevel>()">
-                                    <option value="">-- 請選擇 --</option>
-                                </select>
-                                <span asp-validation-for="IssueReport.Priority" class="text-danger"></span>
+                                <label class="form-label d-block mb-2">緊急程度 <span class="text-danger">*</span></label>
+                                <div class="btn-group w-100" role="group" aria-label="緊急程度選擇">
+                                    <input type="radio" class="btn-check" name="IssueReport.Priority" id="priorityLow" value="Low" checked autocomplete="off">
+                                    <label class="btn btn-outline-success" for="priorityLow">
+                                        <i class="bi bi-arrow-down-circle"></i> 低
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="IssueReport.Priority" id="priorityMedium" value="Medium" autocomplete="off">
+                                    <label class="btn btn-outline-warning" for="priorityMedium">
+                                        <i class="bi bi-dash-circle"></i> 中
+                                    </label>
+                                    
+                                    <input type="radio" class="btn-check" name="IssueReport.Priority" id="priorityHigh" value="High" autocomplete="off">
+                                    <label class="btn btn-outline-danger" for="priorityHigh">
+                                        <i class="bi bi-exclamation-circle"></i> 高
+                                    </label>
+                                </div>
+                                <span asp-validation-for="IssueReport.Priority" class="text-danger d-block mt-1"></span>
                             </div>
 
                             <!-- 回報人 -->
