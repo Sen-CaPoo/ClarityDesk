@@ -1,0 +1,325 @@
+@page
+@model ClarityDesk.Pages.Dashboard.IndexModel
+@{
+    ViewData["Title"] = "統計儀表板";
+}
+
+<div class="dashboard-container">
+    <!-- 頁面標題 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="bi bi-graph-up text-primary me-2"></i>統計儀表板
+            </h2>
+            <p class="text-muted mb-0">系統概覽與關鍵指標追蹤</p>
+        </div>
+        <button class="btn btn-outline-secondary" onclick="location.reload()">
+            <i class="bi bi-arrow-clockwise me-1"></i>重新整理
+        </button>
+    </div>
+
+    <!-- 綜合統計卡片 -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">總回報單數</p>
+                            <h3 class="mb-0 fw-bold">@Model.Summary.TotalIssues</h3>
+                        </div>
+                        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-clipboard-data"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">本週新增</p>
+                            <h3 class="mb-0 fw-bold text-success">@Model.Summary.ThisWeekNewIssues</h3>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-calendar-week"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">本月新增</p>
+                            <h3 class="mb-0 fw-bold text-info">@Model.Summary.ThisMonthNewIssues</h3>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-calendar-month"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">待處理</p>
+                            <h3 class="mb-0 fw-bold text-warning">@Model.Summary.NotStartedCount</h3>
+                        </div>
+                        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP 10 統計排行榜 - 三欄並排 -->
+    <div class="row g-4 mb-4">
+        <!-- 回報人排行榜 -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-person-lines-fill text-primary me-2"></i>回報人統計 TOP 10
+                    </h5>
+                    <div class="ranking-list">
+                        @for (int i = 0; i < Model.ReporterStatistics.Count; i++)
+                        {
+                            var reporter = Model.ReporterStatistics[i];
+                            var rank = i + 1;
+                            var completionRate = reporter.IssueCount > 0 ? (reporter.ResolvedCount * 100.0 / reporter.IssueCount) : 0;
+                            <div class="ranking-item mb-3 p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="ranking-number me-3">@(rank <= 3 ? (rank == 1 ? "🥇" : rank == 2 ? "🥈" : "🥉") : rank.ToString())</span>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">@reporter.ReporterName</h6>
+                                            <small class="text-muted">完成率: @completionRate.ToString("F1")%</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary fs-6">@reporter.IssueCount</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    @{
+                                        var pendingPercent = reporter.IssueCount > 0 ? (reporter.PendingCount * 100.0 / reporter.IssueCount) : 0;
+                                        var resolvedPercent = reporter.IssueCount > 0 ? (reporter.ResolvedCount * 100.0 / reporter.IssueCount) : 0;
+                                    }
+                                    <div class="progress-bar bg-warning" style="width: @pendingPercent.ToString("F1")%" 
+                                         title="待處理: @reporter.PendingCount"></div>
+                                    <div class="progress-bar bg-success" style="width: @resolvedPercent.ToString("F1")%" 
+                                         title="已解決: @reporter.ResolvedCount"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-muted">待處理: @reporter.PendingCount</small>
+                                    <small class="text-muted">已解決: @reporter.ResolvedCount</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 處理人排行榜 -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-people-fill text-primary me-2"></i>處理人統計 TOP 10
+                    </h5>
+                    <div class="ranking-list">
+                        @for (int i = 0; i < Model.AssigneeStatistics.Count; i++)
+                        {
+                            var assignee = Model.AssigneeStatistics[i];
+                            var rank = i + 1;
+                            var completionRate = assignee.AssignedCount > 0 ? (assignee.CompletedCount * 100.0 / assignee.AssignedCount) : 0;
+                            <div class="ranking-item mb-3 p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="ranking-number me-3">@(rank <= 3 ? (rank == 1 ? "🥇" : rank == 2 ? "🥈" : "🥉") : rank.ToString())</span>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">@assignee.AssigneeName</h6>
+                                            <small class="text-muted">完成率: @completionRate.ToString("F1")%</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary fs-6">@assignee.AssignedCount</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    @{
+                                        var pendingPercent = assignee.AssignedCount > 0 ? (assignee.InProgressCount * 100.0 / assignee.AssignedCount) : 0;
+                                        var completedPercent = assignee.AssignedCount > 0 ? (assignee.CompletedCount * 100.0 / assignee.AssignedCount) : 0;
+                                    }
+                                    <div class="progress-bar bg-warning" style="width: @pendingPercent.ToString("F1")%" 
+                                         title="待處理: @assignee.InProgressCount"></div>
+                                    <div class="progress-bar bg-success" style="width: @completedPercent.ToString("F1")%" 
+                                         title="已完成: @assignee.CompletedCount"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-muted">待處理: @assignee.InProgressCount</small>
+                                    <small class="text-muted">已完成: @assignee.CompletedCount</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 問題所屬單位排行榜 -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-building text-primary me-2"></i>問題所屬單位統計 TOP 10
+                    </h5>
+                    <div class="ranking-list">
+                        @for (int i = 0; i < Model.DepartmentStatistics.Count; i++)
+                        {
+                            var department = Model.DepartmentStatistics[i];
+                            var rank = i + 1;
+                            var completionRate = department.IssueCount > 0 ? (department.CompletedCount * 100.0 / department.IssueCount) : 0;
+                            <div class="ranking-item mb-3 p-3 bg-light rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="ranking-number me-3">@(rank <= 3 ? (rank == 1 ? "🥇" : rank == 2 ? "🥈" : "🥉") : rank.ToString())</span>
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">@department.DepartmentName</h6>
+                                            <small class="text-muted">完成率: @completionRate.ToString("F1")%</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-primary fs-6">@department.IssueCount</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    @{
+                                        var pendingPercent = department.IssueCount > 0 ? (department.NotStartedCount * 100.0 / department.IssueCount) : 0;
+                                        var completedPercent = department.IssueCount > 0 ? (department.CompletedCount * 100.0 / department.IssueCount) : 0;
+                                    }
+                                    <div class="progress-bar bg-warning" style="width: @pendingPercent.ToString("F1")%" 
+                                         title="待處理: @department.NotStartedCount"></div>
+                                    <div class="progress-bar bg-success" style="width: @completedPercent.ToString("F1")%" 
+                                         title="已完成: @department.CompletedCount"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-muted">待處理: @department.NotStartedCount</small>
+                                    <small class="text-muted">已完成: @department.CompletedCount</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // 排名項目懸浮效果
+        document.querySelectorAll('.ranking-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+                this.style.transition = 'transform 0.2s ease';
+                this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+    </script>
+}
+
+<style>
+    .dashboard-container {
+        animation: fadeIn 0.5s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.5rem;
+    }
+
+    .ranking-number {
+        font-size: 1.25rem;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .progress {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        transition: width 0.6s ease;
+    }
+
+    .card {
+        transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    .ranking-list {
+        max-height: 700px;
+        overflow-y: auto;
+    }
+
+    .ranking-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .ranking-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .ranking-list::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+    }
+
+    .ranking-list::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>

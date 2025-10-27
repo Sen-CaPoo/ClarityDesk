@@ -26,6 +26,7 @@ namespace ClarityDesk
                 options.Conventions.AuthorizePage("/Issues/Edit");
                 options.Conventions.AuthorizePage("/Issues/Details");
                 options.Conventions.AuthorizePage("/Account/LineBinding");
+                options.Conventions.AuthorizePage("/Dashboard/Index");
                 options.Conventions.AuthorizePage("/Admin/Users/Index", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Index", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Create", "Admin");
@@ -195,6 +196,7 @@ namespace ClarityDesk
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineUsageMonitorService, ClarityDesk.Services.LineUsageMonitorService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineConversationService, ClarityDesk.Services.LineConversationService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineWebhookHandler, ClarityDesk.Services.LineWebhookHandler>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IDashboardService, ClarityDesk.Services.DashboardService>();
             
             // IssueReportService 需要在 LINE 服務之後註冊以確保依賴可用
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportService, ClarityDesk.Services.IssueReportService>();

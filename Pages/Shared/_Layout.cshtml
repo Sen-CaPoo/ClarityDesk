@@ -27,6 +27,11 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-page="/Issues/Index">回報單管理</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Dashboard/Index">
+                                    <i class="bi bi-graph-up me-1"></i>統計儀表板
+                                </a>
+                            </li>
                             @if (User.IsInRole("Admin"))
                             {
                                 <li class="nav-item dropdown">

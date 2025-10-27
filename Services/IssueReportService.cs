@@ -19,6 +19,7 @@ public class IssueReportService : IIssueReportService
     private readonly ILogger<IssueReportService> _logger;
     private readonly ILineMessagingService? _lineMessagingService;
     private readonly ILineBindingService? _lineBindingService;
+    private readonly IDashboardService? _dashboardService;
 
     private const string CacheKeyStatistics = "issue_statistics";
     private const int CacheExpirationMinutes = 5;
@@ -28,13 +29,15 @@ public class IssueReportService : IIssueReportService
         IMemoryCache cache,
         ILogger<IssueReportService> logger,
         ILineMessagingService? lineMessagingService = null,
-        ILineBindingService? lineBindingService = null)
+        ILineBindingService? lineBindingService = null,
+        IDashboardService? dashboardService = null)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _lineMessagingService = lineMessagingService;
         _lineBindingService = lineBindingService;
+        _dashboardService = dashboardService;
     }
 
     /// <inheritdoc />
@@ -67,6 +70,7 @@ public class IssueReportService : IIssueReportService
 
             // 清除統計快取
             _cache.Remove(CacheKeyStatistics);
+            _dashboardService?.ClearAllCaches();
 
             _logger.LogInformation("成功建立回報單 ID: {IssueId}", issue.Id);
 
@@ -209,6 +213,7 @@ public class IssueReportService : IIssueReportService
             if (hasEntityChanges || hasDepartmentChanges)
             {
                 _cache.Remove(CacheKeyStatistics);
+                _dashboardService?.ClearAllCaches();
             }
 
             _logger.LogInformation("成功更新回報單 ID: {IssueId}, 有變更: {HasChanges}", id, hasEntityChanges || hasDepartmentChanges);
@@ -242,6 +247,7 @@ public class IssueReportService : IIssueReportService
 
             // 清除統計快取
             _cache.Remove(CacheKeyStatistics);
+            _dashboardService?.ClearAllCaches();
 
             _logger.LogInformation("成功刪除回報單 ID: {IssueId}", id);
             return true;
@@ -451,6 +457,7 @@ public class IssueReportService : IIssueReportService
 
             // 清除統計快取
             _cache.Remove(CacheKeyStatistics);
+            _dashboardService?.ClearAllCaches();
 
             _logger.LogInformation("成功更新回報單狀態, ID: {IssueId}", id);
             return true;
