@@ -116,12 +116,7 @@
                                                                    value="@dept.Id" 
                                                                    id="dept_@dept.Id">
                                                             <label class="form-check-label" for="dept_@dept.Id">
-                                                                <strong>@dept.Name</strong>
-                                                                @if (!string.IsNullOrEmpty(dept.Description))
-                                                                {
-                                                                    <br />
-                                                                    <small class="text-muted">@dept.Description</small>
-                                                                }
+                                                                @dept.Name
                                                             </label>
                                                         </div>
                                                     </div>

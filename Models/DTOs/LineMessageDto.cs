@@ -9,6 +9,7 @@ public record LineMessageLogDto
 {
     public Guid Id { get; init; }
     public string LineUserId { get; init; } = string.Empty;
+    public string? LineDisplayName { get; init; }
     public LineMessageType MessageType { get; init; }
     public MessageDirection Direction { get; init; }
     public string Content { get; init; } = string.Empty;

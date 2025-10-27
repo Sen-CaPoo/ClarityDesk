@@ -11,12 +11,15 @@ public static class LineMessageExtensions
     /// <summary>
     /// 將 LineMessageLog 實體轉換為 DTO
     /// </summary>
-    public static LineMessageLogDto ToDto(this LineMessageLog entity)
+    /// <param name="entity">實體</param>
+    /// <param name="displayName">LINE 顯示名稱 (選填)</param>
+    public static LineMessageLogDto ToDto(this LineMessageLog entity, string? displayName = null)
     {
         return new LineMessageLogDto
         {
             Id = entity.Id,
             LineUserId = entity.LineUserId,
+            LineDisplayName = displayName,
             MessageType = entity.MessageType,
             Direction = entity.Direction,
             Content = entity.Content,

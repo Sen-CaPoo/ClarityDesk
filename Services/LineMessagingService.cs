@@ -484,13 +484,21 @@ namespace ClarityDesk.Services
 
                 var totalCount = await query.CountAsync(cancellationToken);
 
-                var logs = await query
+                // 加入 LEFT JOIN LineBinding 來取得顯示名稱
+                var logsWithDisplayName = await query
                     .OrderByDescending(l => l.SentAt)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
+                    .GroupJoin(
+                        _context.LineBindings,
+                        log => log.LineUserId,
+                        binding => binding.LineUserId,
+                        (log, bindings) => new { Log = log, Binding = bindings.FirstOrDefault() })
                     .ToListAsync(cancellationToken);
 
-                var dtos = logs.Select(l => l.ToDto()).ToList();
+                var dtos = logsWithDisplayName
+                    .Select(x => x.Log.ToDto(x.Binding?.DisplayName))
+                    .ToList();
 
                 return PagedResult<LineMessageLogDto>.Create(dtos, totalCount, pageNumber, pageSize);
             }

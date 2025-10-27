@@ -135,13 +135,11 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 15%;">發送時間</th>
-                                <th style="width: 15%;">LINE User ID</th>
-                                <th style="width: 8%;">訊息類型</th>
-                                <th style="width: 8%;">方向</th>
-                                <th style="width: 8%;">狀態</th>
-                                <th style="width: 28%;">內容摘要</th>
-                                <th style="width: 10%;">錯誤訊息</th>
-                                <th style="width: 8%;">回報單</th>
+                                <th style="width: 20%;">LINE 顯示名稱</th>
+                                <th style="width: 10%;">狀態</th>
+                                <th style="width: 30%;">內容摘要</th>
+                                <th style="width: 15%;">錯誤訊息</th>
+                                <th style="width: 10%;">回報單</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -152,32 +150,22 @@
                                         <small>@log.SentAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</small>
                                     </td>
                                     <td>
-                                        <small class="font-monospace">
-                                            @if (log.LineUserId.Length > 15)
-                                            {
-                                                <span title="@log.LineUserId">@log.LineUserId.Substring(0, 15)...</span>
-                                            }
-                                            else
-                                            {
-                                                @log.LineUserId
-                                            }
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">@log.MessageType</span>
-                                    </td>
-                                    <td>
-                                        @if (log.Direction == ClarityDesk.Models.Enums.MessageDirection.Outbound)
+                                        @if (!string.IsNullOrEmpty(log.LineDisplayName))
                                         {
-                                            <span class="badge bg-primary">
-                                                <i class="bi bi-arrow-up-right"></i> 發送
-                                            </span>
+                                            <span>@log.LineDisplayName</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary">
-                                                <i class="bi bi-arrow-down-left"></i> 接收
-                                            </span>
+                                            <small class="text-muted font-monospace">
+                                                @if (log.LineUserId.Length > 20)
+                                                {
+                                                    <span title="@log.LineUserId">@log.LineUserId.Substring(0, 20)...</span>
+                                                }
+                                                else
+                                                {
+                                                    @log.LineUserId
+                                                }
+                                            </small>
                                         }
                                     </td>
                                     <td>
@@ -195,24 +183,33 @@
                                         }
                                     </td>
                                     <td>
-                                        <small class="text-truncate d-inline-block" style="max-width: 300px;" title="@log.Content">
-                                            @if (log.Content.Length > 50)
-                                            {
-                                                @(log.Content.Substring(0, 50) + "...")
-                                            }
-                                            else
-                                            {
-                                                @log.Content
-                                            }
-                                        </small>
+                                        <button type="button" class="btn btn-sm btn-link text-start p-0" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#contentModal" 
+                                                data-content="@log.Content"
+                                                data-timestamp="@log.SentAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")"
+                                                data-direction="@(log.Direction == ClarityDesk.Models.Enums.MessageDirection.Outbound ? "發送" : "接收")"
+                                                data-type="@log.MessageType">
+                                            <small class="text-truncate d-inline-block" style="max-width: 350px;">
+                                                @if (log.Content.Length > 60)
+                                                {
+                                                    @(log.Content.Substring(0, 60) + "...")
+                                                }
+                                                else
+                                                {
+                                                    @log.Content
+                                                }
+                                            </small>
+                                            <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                        </button>
                                     </td>
                                     <td>
                                         @if (!string.IsNullOrEmpty(log.ErrorMessage))
                                         {
                                             <small class="text-danger" title="@log.ErrorCode - @log.ErrorMessage">
-                                                @if (log.ErrorMessage.Length > 20)
+                                                @if (log.ErrorMessage.Length > 30)
                                                 {
-                                                    @(log.ErrorMessage.Substring(0, 20) + "...")
+                                                    @(log.ErrorMessage.Substring(0, 30) + "...")
                                                 }
                                                 else
                                                 {
@@ -299,6 +296,45 @@
     }
 </div>
 
+<!-- 內容詳情模態視窗 -->
+<div class="modal fade" id="contentModal" tabindex="-1" aria-labelledby="contentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contentModalLabel">
+                    <i class="bi bi-chat-text me-2"></i>訊息內容詳情
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>訊息類型：</strong>
+                    <span id="modalMessageType" class="badge bg-info"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>方向：</strong>
+                    <span id="modalDirection"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>發送時間：</strong>
+                    <span id="modalTimestamp"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>完整內容：</strong>
+                    <div class="border rounded p-3 bg-light">
+                        <pre id="modalContent" class="mb-0" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>關閉
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         // 自動消失提示訊息
@@ -309,5 +345,20 @@
                 bsAlert.close();
             });
         }, 5000);
+
+        // 處理模態視窗內容
+        var contentModal = document.getElementById('contentModal');
+        contentModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var content = button.getAttribute('data-content');
+            var timestamp = button.getAttribute('data-timestamp');
+            var direction = button.getAttribute('data-direction');
+            var type = button.getAttribute('data-type');
+
+            document.getElementById('modalContent').textContent = content;
+            document.getElementById('modalTimestamp').textContent = timestamp;
+            document.getElementById('modalDirection').textContent = direction;
+            document.getElementById('modalMessageType').textContent = type;
+        });
     </script>
 }
