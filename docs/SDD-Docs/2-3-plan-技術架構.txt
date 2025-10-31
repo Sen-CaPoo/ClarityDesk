@@ -1,5 +1,0 @@
-/speckit.plan
-使用本專案 .Net Core 8，資料庫採用 Azure SQL，使用 EF Core Code First workflow，會整合 LINE Messaging API 實現雙向通訊機制(Push Message),LINE 發送訊息採用 Flex Message 格式提供良好的視覺呈現。
-站台會架設在 Windows IIS 上面。
-不使用 AutoMapper to map DTO，而是使用 POCO instead。
-不使用 Redis。
