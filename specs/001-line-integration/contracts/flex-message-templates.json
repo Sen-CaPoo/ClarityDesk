@@ -1,0 +1,400 @@
+{
+  "templates": {
+    "newIssueNotification": {
+      "type": "flex",
+      "altText": "新問題回報單通知 - IR-{issueId}",
+      "contents": {
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "🔔 新問題回報單",
+              "weight": "bold",
+              "size": "lg",
+              "color": "#1DB446"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "編號", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "IR-{issueId}", "size": "sm", "weight": "bold", "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "標題", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{title}", "size": "sm", "wrap": true, "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "緊急程度", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{priorityEmoji} {priority}", "size": "sm", "color": "{priorityColor}", "flex": 5}
+              ]
+            },
+            {"type": "separator", "margin": "md"},
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "單位", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{department}", "size": "sm", "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "聯絡人", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{customerName}", "size": "sm", "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "電話", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{customerPhone}", "size": "sm", "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "日期", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{recordDate}", "size": "sm", "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "回報人", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{reporterName}", "size": "sm", "flex": 5}
+              ]
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "uri",
+                "label": "查看詳細內容",
+                "uri": "{detailsUrl}"
+              },
+              "style": "primary",
+              "color": "#1DB446"
+            }
+          ]
+        }
+      }
+    },
+    "assignmentChangedNotification": {
+      "type": "flex",
+      "altText": "問題已指派給您 - IR-{issueId}",
+      "contents": {
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "👤 問題已指派給您",
+              "weight": "bold",
+              "size": "lg",
+              "color": "#0084FF"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "編號", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "IR-{issueId}", "size": "sm", "weight": "bold", "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "標題", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{title}", "size": "sm", "wrap": true, "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "緊急程度", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{priorityEmoji} {priority}", "size": "sm", "color": "{priorityColor}", "flex": 5}
+              ]
+            },
+            {"type": "separator", "margin": "md"},
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "單位", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{department}", "size": "sm", "flex": 5}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "聯絡人", "size": "sm", "color": "#999999", "flex": 2},
+                {"type": "text", "text": "{customerName}", "size": "sm", "flex": 5}
+              ]
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "uri",
+                "label": "查看詳細內容",
+                "uri": "{detailsUrl}"
+              },
+              "style": "primary",
+              "color": "#0084FF"
+            }
+          ]
+        }
+      }
+    },
+    "statusChangedNotification": {
+      "type": "text",
+      "text": "{statusEmoji} 問題回報單狀態更新\n\n回報單編號：IR-{issueId}\n標題：{title}\n新狀態：{newStatus}\n\n查看詳細內容：\n{detailsUrl}"
+    },
+    "conversationStart": {
+      "type": "text",
+      "text": "📝 開始問題回報流程\n\n請輸入問題標題："
+    },
+    "conversationAskContent": {
+      "type": "text",
+      "text": "✅ 問題標題：{title}\n\n請輸入問題詳細內容："
+    },
+    "conversationAskDepartment": {
+      "type": "text",
+      "text": "請選擇問題所屬單位：",
+      "quickReply": {
+        "items": [
+          {
+            "type": "action",
+            "action": {
+              "type": "postback",
+              "label": "{departmentName}",
+              "data": "action=select_department&id={departmentId}"
+            }
+          }
+        ]
+      }
+    },
+    "conversationAskPriority": {
+      "type": "text",
+      "text": "請選擇問題緊急程度：",
+      "quickReply": {
+        "items": [
+          {
+            "type": "action",
+            "action": {
+              "type": "postback",
+              "label": "🔴 高",
+              "data": "action=select_priority&value=High"
+            }
+          },
+          {
+            "type": "action",
+            "action": {
+              "type": "postback",
+              "label": "🟡 中",
+              "data": "action=select_priority&value=Medium"
+            }
+          },
+          {
+            "type": "action",
+            "action": {
+              "type": "postback",
+              "label": "🟢 低",
+              "data": "action=select_priority&value=Low"
+            }
+          }
+        ]
+      }
+    },
+    "conversationAskCustomerName": {
+      "type": "text",
+      "text": "✅ 緊急程度：{priority}\n\n請輸入聯絡人姓名："
+    },
+    "conversationAskCustomerPhone": {
+      "type": "text",
+      "text": "✅ 聯絡人：{customerName}\n\n請輸入連絡電話："
+    },
+    "conversationAskImages": {
+      "type": "text",
+      "text": "✅ 連絡電話：{customerPhone}\n\n是否需要上傳圖片？\n（可直接傳送圖片，最多 3 張，或輸入「跳過」繼續）"
+    },
+    "conversationConfirm": {
+      "type": "text",
+      "text": "📋 請確認以下資訊：\n\n標題：{title}\n內容：{content}\n單位：{department}\n緊急程度：{priorityEmoji} {priority}\n聯絡人：{customerName}\n電話：{customerPhone}\n圖片：{imageCount} 張\n\n請點擊下方按鈕確認送出：",
+      "quickReply": {
+        "items": [
+          {
+            "type": "action",
+            "action": {
+              "type": "postback",
+              "label": "✅ 確認送出",
+              "data": "action=confirm"
+            }
+          },
+          {
+            "type": "action",
+            "action": {
+              "type": "postback",
+              "label": "❌ 取消",
+              "data": "action=cancel"
+            }
+          }
+        ]
+      }
+    },
+    "conversationCompleted": {
+      "type": "flex",
+      "altText": "問題回報單已建立 - IR-{issueId}",
+      "contents": {
+        "type": "bubble",
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "md",
+          "contents": [
+            {
+              "type": "text",
+              "text": "✅ 問題回報單已建立！",
+              "weight": "bold",
+              "size": "lg",
+              "color": "#1DB446"
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "回報單編號：", "size": "sm", "color": "#999999", "flex": 0},
+                {"type": "text", "text": "IR-{issueId}", "size": "sm", "weight": "bold"}
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "contents": [
+                {"type": "text", "text": "指派處理人員：", "size": "sm", "color": "#999999", "flex": 0},
+                {"type": "text", "text": "{assignedUser}", "size": "sm"}
+              ]
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "uri",
+                "label": "查看詳細內容",
+                "uri": "{detailsUrl}"
+              },
+              "style": "primary",
+              "color": "#1DB446"
+            }
+          ]
+        }
+      }
+    },
+    "conversationCanceled": {
+      "type": "text",
+      "text": "❌ 已取消問題回報流程"
+    },
+    "errorNotBound": {
+      "type": "text",
+      "text": "⚠️ 您尚未綁定系統帳號\n\n請先登入 ClarityDesk 網站完成帳號綁定：\n{bindingUrl}"
+    },
+    "errorImageLimit": {
+      "type": "text",
+      "text": "❌ 已達圖片上傳上限（3 張），請輸入「跳過」繼續"
+    },
+    "errorImageDownloadFailed": {
+      "type": "text",
+      "text": "❌ 圖片接收失敗，請重新上傳或輸入「跳過」繼續"
+    },
+    "errorUnknownCommand": {
+      "type": "text",
+      "text": "⚠️ 無法辨識的指令\n\n請輸入「回報問題」開始回報流程"
+    },
+    "imageReceived": {
+      "type": "text",
+      "text": "✅ 已收到圖片 {currentCount}/3\n\n可繼續上傳或輸入「跳過」完成"
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "description": "LINE Flex Message 範本定義，使用 {placeholder} 語法標記需替換的動態內容",
+    "priorityMapping": {
+      "High": {
+        "emoji": "🔴",
+        "color": "#FF0000",
+        "text": "高"
+      },
+      "Medium": {
+        "emoji": "🟡",
+        "color": "#FFA500",
+        "text": "中"
+      },
+      "Low": {
+        "emoji": "🟢",
+        "color": "#008000",
+        "text": "低"
+      }
+    },
+    "statusMapping": {
+      "Pending": {
+        "emoji": "⏳",
+        "text": "待處理"
+      },
+      "Completed": {
+        "emoji": "✅",
+        "text": "已完成"
+      }
+    }
+  }
+}
