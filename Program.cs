@@ -29,7 +29,7 @@ namespace ClarityDesk
                 options.Conventions.AuthorizePage("/Admin/Departments/Index", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Create", "Admin");
                 options.Conventions.AuthorizePage("/Admin/Departments/Edit", "Admin");
-                
+
                 // 允許匿名訪問的頁面
                 options.Conventions.AllowAnonymousToPage("/Account/Login");
                 options.Conventions.AllowAnonymousToPage("/Account/AccessDenied");
@@ -38,6 +38,9 @@ namespace ClarityDesk
                 options.Conventions.AllowAnonymousToPage("/Privacy");
             });
 
+            // Add API Controllers (for LINE Webhook)
+            builder.Services.AddControllers();
+
             // 設定 DbContext 使用 SQL Server
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -45,6 +48,9 @@ namespace ClarityDesk
             // 設定 LINE Login Options
             builder.Services.Configure<LineLoginOptions>(
                 builder.Configuration.GetSection("LineLogin"));
+
+            // 設定 LINE Messaging Options (用於綁定頁面的 OAuth)
+            builder.Configuration.GetSection("LineMessaging").Bind(new { });
 
             // 設定 Authentication
             builder.Services.AddAuthentication(options =>
@@ -86,7 +92,7 @@ namespace ClarityDesk
                         response.EnsureSuccessStatusCode();
 
                         var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-                        
+
                         // 手動新增 Claims
                         var userId = user.RootElement.GetProperty("userId").GetString();
                         var displayName = user.RootElement.GetProperty("displayName").GetString();
@@ -160,11 +166,28 @@ namespace ClarityDesk
                 options.Level = System.IO.Compression.CompressionLevel.Optimal;
             });
 
+            // 設定 FormOptions 以支援 LINE 圖片上傳 (最多 3 張 x 10MB = 30MB)
+            builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 31457280; // 30 MB
+            });
+
+            // 註冊 HttpClient for LINE Messaging API
+            builder.Services.AddHttpClient("LineMessagingAPI", client =>
+            {
+                client.BaseAddress = new Uri("https://api.line.me/v2/bot/");
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
             // 註冊服務層
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportService, ClarityDesk.Services.IssueReportService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IAuthenticationService, ClarityDesk.Services.AuthenticationService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IUserManagementService, ClarityDesk.Services.UserManagementService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IDepartmentService, ClarityDesk.Services.DepartmentService>();
+            builder.Services.AddScoped<ClarityDesk.Services.Interfaces.ILineMessagingService, ClarityDesk.Services.LineMessagingService>();
+
+            // 註冊背景服務
+            builder.Services.AddHostedService<ClarityDesk.Services.ConversationCleanupService>();
 
             var app = builder.Build();
 
@@ -186,7 +209,7 @@ namespace ClarityDesk
             }
 
             // Configure the HTTP request pipeline
-            
+
             // 使用全域例外處理 Middleware
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -197,7 +220,7 @@ namespace ClarityDesk
             }
 
             app.UseHttpsRedirection();
-            
+
             // 設定靜態檔案快取 (365天)
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -219,6 +242,7 @@ namespace ClarityDesk
             app.UseSession();
 
             app.MapRazorPages();
+            app.MapControllers(); // Map API Controllers for LINE Webhook
 
             app.Run();
         }

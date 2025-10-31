@@ -17,6 +17,7 @@ public class IssueReportService : IIssueReportService
     private readonly ApplicationDbContext _context;
     private readonly IMemoryCache _cache;
     private readonly ILogger<IssueReportService> _logger;
+    private readonly ILineMessagingService _lineMessagingService;
 
     private const string CacheKeyStatistics = "issue_statistics";
     private const int CacheExpirationMinutes = 5;
@@ -24,11 +25,13 @@ public class IssueReportService : IIssueReportService
     public IssueReportService(
         ApplicationDbContext context,
         IMemoryCache cache,
-        ILogger<IssueReportService> logger)
+        ILogger<IssueReportService> logger,
+        ILineMessagingService lineMessagingService)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _lineMessagingService = lineMessagingService ?? throw new ArgumentNullException(nameof(lineMessagingService));
     }
 
     /// <inheritdoc />
@@ -63,6 +66,34 @@ public class IssueReportService : IIssueReportService
             _cache.Remove(CacheKeyStatistics);
 
             _logger.LogInformation("成功建立回報單 ID: {IssueId}", issue.Id);
+
+            // 發送 LINE 推送通知 (Fail-safe: 失敗不影響回報單建立)
+            if (issue.AssignedUserId > 0)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var issueDto = await GetIssueReportByIdAsync(issue.Id);
+                        if (issueDto != null)
+                        {
+                            var assignedUserBinding = await _context.LineBindings
+                                .Where(lb => lb.UserId == issue.AssignedUserId && lb.IsActive)
+                                .FirstOrDefaultAsync();
+
+                            if (assignedUserBinding != null)
+                            {
+                                await _lineMessagingService.PushNewIssueNotificationAsync(issueDto, assignedUserBinding.LineUserId);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "發送新問題 LINE 通知時發生錯誤 (Issue: {IssueId})", issue.Id);
+                    }
+                });
+            }
+
             return issue.Id;
         }
         catch (Exception ex)
@@ -88,6 +119,10 @@ public class IssueReportService : IIssueReportService
                 _logger.LogWarning("找不到回報單 ID: {IssueId}", id);
                 return false;
             }
+
+            // 記錄舊值以便檢測變更
+            var oldStatus = issue.Status;
+            var oldAssignedUserId = issue.AssignedUserId;
 
             // 更新實體，並檢查是否有實際變更
             bool hasEntityChanges = issue.UpdateFromDto(dto);
@@ -138,6 +173,67 @@ public class IssueReportService : IIssueReportService
             {
                 _cache.Remove(CacheKeyStatistics);
             }
+
+            // 發送 LINE 推送通知 (Fail-safe: 失敗不影響回報單更新)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var issueDto = await GetIssueReportByIdAsync(id);
+                    if (issueDto == null) return;
+
+                    // 檢測狀態變更
+                    if (oldStatus != issue.Status)
+                    {
+                        // 通知指派人員和回報人
+                        var notifyUserIds = new List<int>();
+                        if (issue.AssignedUserId > 0)
+                            notifyUserIds.Add(issue.AssignedUserId);
+
+                        // TODO: 如需通知回報人,需從 issue 取得 createdBy 或類似欄位
+
+                        foreach (var userId in notifyUserIds.Distinct())
+                        {
+                            var binding = await _context.LineBindings
+                                .Where(lb => lb.UserId == userId && lb.IsActive)
+                                .FirstOrDefaultAsync();
+
+                            if (binding != null)
+                            {
+                                await _lineMessagingService.PushStatusChangedNotificationAsync(
+                                    issueDto,
+                                    oldStatus.ToString(),
+                                    issue.Status.ToString(),
+                                    binding.LineUserId);
+                            }
+                        }
+                    }
+
+                    // 檢測指派變更
+                    if (oldAssignedUserId != issue.AssignedUserId && issue.AssignedUserId > 0)
+                    {
+                        var newAssigneeBinding = await _context.LineBindings
+                            .Where(lb => lb.UserId == issue.AssignedUserId && lb.IsActive)
+                            .FirstOrDefaultAsync();
+
+                        if (newAssigneeBinding != null)
+                        {
+                            var newAssignee = await _context.Users.FindAsync(issue.AssignedUserId);
+                            if (newAssignee != null)
+                            {
+                                await _lineMessagingService.PushAssignmentChangedNotificationAsync(
+                                    issueDto,
+                                    newAssignee.DisplayName,
+                                    newAssigneeBinding.LineUserId);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "發送 LINE 通知時發生錯誤 (Issue: {IssueId})", id);
+                }
+            });
 
             _logger.LogInformation("成功更新回報單 ID: {IssueId}, 有變更: {HasChanges}", id, hasEntityChanges || hasDepartmentChanges);
             return true;
@@ -272,7 +368,7 @@ public class IssueReportService : IIssueReportService
 
             // 計算總筆數
             var totalCount = await query.CountAsync(cancellationToken);
-            
+
             _logger.LogInformation("After filtering, total count: {TotalCount}", totalCount);
 
             // 套用排序

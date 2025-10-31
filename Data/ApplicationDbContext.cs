@@ -13,22 +13,22 @@ namespace ClarityDesk.Data
             : base(options)
         {
         }
-        
+
         /// <summary>
         /// 使用者
         /// </summary>
         public DbSet<User> Users { get; set; }
-        
+
         /// <summary>
         /// 單位
         /// </summary>
         public DbSet<Department> Departments { get; set; }
-        
+
         /// <summary>
         /// 回報單
         /// </summary>
         public DbSet<IssueReport> IssueReports { get; set; }
-        
+
         /// <summary>
         /// 部門指派
         /// </summary>
@@ -39,18 +39,36 @@ namespace ClarityDesk.Data
         /// </summary>
         public DbSet<DepartmentUser> DepartmentUsers { get; set; }
 
+        /// <summary>
+        /// LINE 綁定記錄
+        /// </summary>
+        public DbSet<LineBinding> LineBindings { get; set; }
+
+        /// <summary>
+        /// LINE 推送記錄
+        /// </summary>
+        public DbSet<LinePushLog> LinePushLogs { get; set; }
+
+        /// <summary>
+        /// LINE 對話狀態
+        /// </summary>
+        public DbSet<LineConversationState> LineConversationStates { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             // 套用所有 Entity Configurations
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new DepartmentConfiguration());
             modelBuilder.ApplyConfiguration(new IssueReportConfiguration());
             modelBuilder.ApplyConfiguration(new DepartmentAssignmentConfiguration());
             modelBuilder.ApplyConfiguration(new DepartmentUserConfiguration());
+            modelBuilder.ApplyConfiguration(new LineBindingConfiguration());
+            modelBuilder.ApplyConfiguration(new LinePushLogConfiguration());
+            modelBuilder.ApplyConfiguration(new LineConversationStateConfiguration());
         }
-        
+
         /// <summary>
         /// 覆寫 SaveChanges 自動更新 UpdatedAt 欄位
         /// </summary>
@@ -59,7 +77,7 @@ namespace ClarityDesk.Data
             UpdateTimestamps();
             return base.SaveChanges();
         }
-        
+
         /// <summary>
         /// 覆寫 SaveChangesAsync 自動更新 UpdatedAt 欄位
         /// </summary>
@@ -68,7 +86,7 @@ namespace ClarityDesk.Data
             UpdateTimestamps();
             return base.SaveChangesAsync(cancellationToken);
         }
-        
+
         /// <summary>
         /// 更新時間戳記
         /// </summary>
@@ -76,7 +94,7 @@ namespace ClarityDesk.Data
         {
             var entries = ChangeTracker.Entries()
                 .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
-            
+
             foreach (var entry in entries)
             {
                 if (entry.Entity is User user)
@@ -109,6 +127,29 @@ namespace ClarityDesk.Data
                     {
                         assignment.AssignedAt = DateTime.UtcNow;
                     }
+                }
+                else if (entry.Entity is LineBinding lineBinding)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        lineBinding.CreatedAt = DateTime.UtcNow;
+                    }
+                    lineBinding.UpdatedAt = DateTime.UtcNow;
+                }
+                else if (entry.Entity is LinePushLog linePushLog)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        linePushLog.CreatedAt = DateTime.UtcNow;
+                    }
+                }
+                else if (entry.Entity is LineConversationState lineConversationState)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        lineConversationState.CreatedAt = DateTime.UtcNow;
+                    }
+                    lineConversationState.UpdatedAt = DateTime.UtcNow;
                 }
             }
         }

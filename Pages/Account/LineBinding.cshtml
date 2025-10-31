@@ -1,0 +1,108 @@
+@page
+@model ClarityDesk.Pages.Account.LineBindingModel
+@{
+    ViewData["Title"] = "LINE 官方帳號綁定";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-line"></i> LINE 官方帳號綁定
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            @Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            @Model.SuccessMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (Model.Binding != null && Model.Binding.IsActive)
+                    {
+                        <!-- 已綁定狀態 -->
+                        <div class="text-center mb-4">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3 text-success">已綁定 LINE 官方帳號</h5>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-end">
+                                <strong>LINE 顯示名稱：</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @if (!string.IsNullOrEmpty(Model.Binding.PictureUrl))
+                                {
+                                    <img src="@Model.Binding.PictureUrl" alt="LINE 頭像" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                }
+                                @Model.Binding.DisplayName
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 text-end">
+                                <strong>綁定時間：</strong>
+                            </div>
+                            <div class="col-md-8">
+                                @Model.Binding.BoundAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <form method="post" asp-page-handler="Unbind" onsubmit="return confirm('確定要解除綁定嗎？');">
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-x-circle"></i> 解除綁定
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- 未綁定狀態 -->
+                        <div class="text-center mb-4">
+                            <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3 text-muted">尚未綁定 LINE 官方帳號</h5>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">綁定 LINE 官方帳號的好處：</h6>
+                            <ul class="mb-0">
+                                <li>即時接收問題回報單通知</li>
+                                <li>透過 LINE 快速回報問題</li>
+                                <li>不錯過任何重要更新</li>
+                            </ul>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <form method="post" asp-page-handler="Bind">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="bi bi-line"></i> 綁定 LINE 官方帳號
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mt-3 text-center">
+                <a href="/Issues/Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回問題列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
