@@ -77,8 +77,8 @@ Repository root structure for ASP.NET Core Razor Pages application:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T022 [P] [US1] Create `LineBindingPageTests.cs` unit test in `Tests/ClarityDesk.UnitTests/` to test LineBindingPageModel business logic
-- [ ] T023 [P] [US1] Create `LineBindingIntegrationTests.cs` in `Tests/ClarityDesk.IntegrationTests/` to test OAuth flow end-to-end
+- [ ] T022 [P] [US1] Create `LineBindingPageTests.cs` unit test in `Tests/ClarityDesk.UnitTests/` to test LineBindingPageModel business logic (include test cases: successful binding, unbinding, guest account rejection, duplicate LINE account prevention)
+- [ ] T023 [P] [US1] Create `LineBindingIntegrationTests.cs` in `Tests/ClarityDesk.IntegrationTests/` to test OAuth flow end-to-end (include test cases: OAuth success, OAuth failure, user denied authorization)
 
 ### Implementation for User Story 1
 
@@ -103,14 +103,14 @@ Repository root structure for ASP.NET Core Razor Pages application:
 
 ### Tests for User Story 2 (OPTIONAL) ⚠️
 
-- [ ] T032 [P] [US2] Create `LineMessagingServiceTests.cs` unit test in `Tests/ClarityDesk.UnitTests/` to test push notification logic with mocked HttpClient
+- [ ] T032 [P] [US2] Create `LineMessagingServiceTests.cs` unit test in `Tests/ClarityDesk.UnitTests/` to test push notification logic with mocked HttpClient (include assertions: LinePushLog creation with correct status, retry count tracking)
 - [ ] T033 [P] [US2] Create `LinePushNotificationIntegrationTests.cs` in `Tests/ClarityDesk.IntegrationTests/` to test end-to-end push flow
 
 ### Implementation for User Story 2
 
 - [ ] T034 [P] [US2] Implement `LineMessagingService.cs` with HttpClient injection, configuration binding
 - [ ] T035 [US2] Implement `PushMessageAsync` method in LineMessagingService - send POST request to `https://api.line.me/v2/bot/message/push` with Authorization header
-- [ ] T036 [US2] Implement `BuildNewIssueFlexMessage` private method in LineMessagingService - construct Flex Message JSON using template from `contracts/flex-message-templates.json` (newIssueNotification)
+- [ ] T036 [US2] Implement `BuildNewIssueFlexMessage` private method in LineMessagingService - construct Flex Message JSON using template from `contracts/flex-message-templates.json` (newIssueNotification), generate deep link URL pattern: https://{domain}/Issues/Details/{issueId}
 - [ ] T037 [US2] Implement `BuildStatusChangedMessage` private method in LineMessagingService - construct text message for status updates
 - [ ] T038 [US2] Implement `BuildAssignmentChangedFlexMessage` private method in LineMessagingService - construct Flex Message using assignmentChangedNotification template
 - [ ] T039 [US2] Implement `PushNewIssueNotificationAsync` method - check if assigned user has active LineBinding, build Flex Message, call PushMessageAsync, log to LinePushLog
@@ -120,6 +120,7 @@ Repository root structure for ASP.NET Core Razor Pages application:
 - [ ] T043 [US2] Create LinePushLog entries for all push attempts (Success/Failed/Retrying status, RetryCount, ErrorMessage)
 - [ ] T044 [US2] Integrate push notifications into `IssueReportService.CreateIssueAsync` - call PushNewIssueNotificationAsync after successful issue creation
 - [ ] T045 [US2] Integrate push notifications into `IssueReportService.UpdateIssueAsync` - detect status/assignment changes, call appropriate notification methods
+- [ ] T045a [US2] Verify existing IssueReportServiceTests still pass after T044/T045 modifications - run `dotnet test Tests/ClarityDesk.UnitTests/ClarityDesk.UnitTests.csproj --filter FullyQualifiedName~IssueReportServiceTests`
 - [ ] T046 [US2] Add error handling to ensure push failures do not block issue creation/update (fail-safe design)
 - [ ] T047 [US2] Add logging for all push operations (success/failure) using ILogger<LineMessagingService>
 
@@ -150,7 +151,7 @@ Repository root structure for ASP.NET Core Razor Pages application:
 - [ ] T057 [US3] Implement conversation flow for "回報問題" keyword - create new LineConversationState with CurrentStep = AskTitle, ExpiresAt = now + 24h
 - [ ] T058 [US3] Implement `ProcessConversationStep` method - switch on CurrentStep, update state with user input, advance to next step, call ReplyMessageAsync with next question
 - [ ] T059 [US3] Implement AskTitle step - save Title to conversation state, advance to AskContent
-- [ ] T060 [US3] Implement AskContent step - save Content to conversation state, advance to AskDepartment, send quick reply with department options
+- [ ] T060 [US3] Implement AskContent step - save Content to conversation state, advance to AskDepartment, send quick reply with department options (query all active departments from Department table using DbContext)
 - [ ] T061 [US3] Implement `HandlePostbackAsync` for department selection - parse "action=select_department&id={id}", update DepartmentId, advance to AskPriority
 - [ ] T062 [US3] Implement AskPriority step with quick reply buttons - Low/Medium/High options, parse "action=select_priority&value={value}"
 - [ ] T063 [US3] Implement AskCustomerName step - save CustomerName, advance to AskCustomerPhone
@@ -161,7 +162,7 @@ Repository root structure for ASP.NET Core Razor Pages application:
 - [ ] T068 [US3] Implement Confirm step - display summary Flex Message with all collected data, show "確認送出" and "取消" quick reply buttons
 - [ ] T069 [US3] Implement `HandlePostbackAsync` for "action=confirm" - create IssueReport entity, auto-assign based on DepartmentId, move images to final location, create LinePushLog, advance to Completed
 - [ ] T070 [US3] Implement `HandlePostbackAsync` for "action=cancel" - delete conversation state, reply with cancellation message
-- [ ] T071 [US3] Implement "取消" keyword handling at any step - delete conversation state immediately
+- [ ] T071 [US3] Implement "取消" keyword handling at ANY conversation step (AskTitle, AskContent, AskDepartment, AskPriority, AskCustomerName, AskCustomerPhone, AskImages, Confirm) - delete conversation state immediately and reply with cancellation confirmation
 - [ ] T072 [US3] Implement timeout detection - check ExpiresAt on conversation state retrieval, delete if expired, reply with timeout message
 - [ ] T073 [US3] Implement image download from LINE Content API - GET https://api-data.line.me/v2/bot/message/{messageId}/content with Authorization header
 - [ ] T074 [US3] Implement auto-assignment logic - query DepartmentUser for default handler, fallback to admin if no default
@@ -185,9 +186,9 @@ Repository root structure for ASP.NET Core Razor Pages application:
 - [ ] T083 [P] Update `quickstart.md` validation - verify ngrok setup, webhook URL configuration, binding flow, push notification, conversation flow
 - [ ] T084 Add monitoring queries to documentation - LinePushLog failure rate, conversation state metrics, image storage size
 - [ ] T085 [P] Code review and refactoring - ensure all error messages are user-friendly, consistent naming conventions, DRY principle
-- [ ] T086 Security review - verify webhook signature validation, input sanitization, image upload restrictions, rate limiting considerations
+- [ ] T086 Security review - verify webhook signature validation, input sanitization (HTML encode user input before saving to prevent XSS), image upload restrictions (validate file extension, MIME type, size), rate limiting considerations
 - [ ] T087 Performance optimization - add response caching for department list, optimize conversation state queries with proper indexes
-- [ ] T088 [P] Create deployment checklist - HTTPS requirement, webhook URL update, Channel Secret/Token configuration, image directory permissions
+- [ ] T088 [P] Create deployment checklist - HTTPS requirement (verify SSL certificate valid, webhook endpoint accessible via HTTPS), webhook URL update in LINE Developers Console, Channel Secret/Token configuration in appsettings.json or User Secrets, image directory permissions (IIS_IUSRS write access to wwwroot/uploads/line-images/)
 - [ ] T089 Run all unit tests (if created): `dotnet test Tests/ClarityDesk.UnitTests/ClarityDesk.UnitTests.csproj`
 - [ ] T090 Run all integration tests (if created): `dotnet test Tests/ClarityDesk.IntegrationTests/ClarityDesk.IntegrationTests.csproj`
 
