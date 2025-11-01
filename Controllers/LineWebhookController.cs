@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ClarityDesk.Controllers
 {
@@ -15,16 +16,16 @@ namespace ClarityDesk.Controllers
     [Route("api/line/webhook")]
     public class LineWebhookController : ControllerBase
     {
-        private readonly ILineMessagingService _lineMessagingService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IConfiguration _configuration;
         private readonly ILogger<LineWebhookController> _logger;
 
         public LineWebhookController(
-            ILineMessagingService lineMessagingService,
+            IServiceScopeFactory serviceScopeFactory,
             IConfiguration configuration,
             ILogger<LineWebhookController> logger)
         {
-            _lineMessagingService = lineMessagingService;
+            _serviceScopeFactory = serviceScopeFactory;
             _configuration = configuration;
             _logger = logger;
         }
@@ -72,7 +73,10 @@ namespace ClarityDesk.Controllers
                 {
                     try
                     {
-                        await _lineMessagingService.HandleWebhookEventAsync(webhookRequest);
+                        // 建立新的 scope 以取得獨立的服務實例
+                        using var scope = _serviceScopeFactory.CreateScope();
+                        var lineMessagingService = scope.ServiceProvider.GetRequiredService<ILineMessagingService>();
+                        await lineMessagingService.HandleWebhookEventAsync(webhookRequest);
                     }
                     catch (Exception ex)
                     {

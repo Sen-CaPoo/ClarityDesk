@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ClarityDesk.Pages.Account
 {
@@ -72,7 +74,8 @@ namespace ClarityDesk.Pages.Account
         }
 
         /// <summary>
-        /// 發起 LINE Login OAuth 流程
+        /// 發起 LINE Login OAuth 流程 (用於綁定 LINE 官方帳號)
+        /// 注意: 使用 LINE Login Channel，與網站登入共用同一個 Channel
         /// </summary>
         public IActionResult OnPostBind()
         {
@@ -91,8 +94,8 @@ namespace ClarityDesk.Pages.Account
                 return RedirectToPage();
             }
 
-            // 構建 LINE Login OAuth URL
-            var channelId = _configuration["LineMessaging:ChannelId"];
+            // 構建 LINE Login OAuth URL (與網站登入使用同一個 LINE Login Channel)
+            var channelId = _configuration["LineLogin:ChannelId"];
             var callbackUrl = Url.Page("/Account/LineBinding", "Callback", null, Request.Scheme);
             var state = Guid.NewGuid().ToString("N");
 
@@ -149,41 +152,43 @@ namespace ClarityDesk.Pages.Account
                     return RedirectToPage();
                 }
 
-                // 取得 LINE 使用者資料
-                var profile = await GetLineProfileAsync(tokenResponse.AccessToken);
+                // 從 ID Token 取得使用者資料
+                var profile = ExtractProfileFromIdToken(tokenResponse.IdToken);
                 if (profile == null)
                 {
                     TempData["ErrorMessage"] = "取得 LINE 使用者資料失敗";
                     return RedirectToPage();
                 }
 
-                // 檢查此 LINE 帳號是否已被其他使用者綁定
-                var existingBinding = await _context.LineBindings
-                    .Where(lb => lb.LineUserId == profile.UserId && lb.IsActive && lb.UserId != userId)
+                // 檢查此 LINE 帳號是否已被其他使用者綁定（包含非活動狀態）
+                var existingBindingByLineUser = await _context.LineBindings
+                    .Where(lb => lb.LineUserId == profile.UserId && lb.UserId != userId)
                     .FirstOrDefaultAsync();
 
-                if (existingBinding != null)
+                if (existingBindingByLineUser != null)
                 {
                     TempData["ErrorMessage"] = "此 LINE 帳號已被其他使用者綁定";
                     return RedirectToPage();
                 }
 
-                // 檢查當前使用者是否已有綁定
+                // 檢查當前使用者是否已有綁定記錄（包含非活動狀態）
                 var currentBinding = await _context.LineBindings
-                    .Where(lb => lb.UserId == userId && lb.IsActive)
+                    .Where(lb => lb.UserId == userId)
                     .FirstOrDefaultAsync();
 
                 if (currentBinding != null)
                 {
-                    // 更新現有綁定
+                    // 更新現有綁定（無論是否 IsActive）
                     currentBinding.LineUserId = profile.UserId;
                     currentBinding.DisplayName = profile.DisplayName;
                     currentBinding.PictureUrl = profile.PictureUrl;
+                    currentBinding.IsActive = true;
                     currentBinding.BoundAt = DateTime.UtcNow;
+                    currentBinding.UnboundAt = null;
                 }
                 else
                 {
-                    // 建立新綁定
+                    // 建立新綁定（首次綁定）
                     var newBinding = new LineBinding
                     {
                         UserId = userId.Value,
@@ -254,58 +259,135 @@ namespace ClarityDesk.Pages.Account
         }
 
         /// <summary>
-        /// 交換 authorization code 為 access token
+        /// 交換 authorization code 為 access token (使用 LINE Login Channel)
         /// </summary>
         private async Task<LineTokenResponse?> ExchangeCodeForTokenAsync(string code)
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            var channelId = _configuration["LineMessaging:ChannelId"];
-            var channelSecret = _configuration["LineMessaging:ChannelSecret"];
-            var callbackUrl = Url.Page("/Account/LineBinding", "Callback", null, Request.Scheme);
-
-            var requestContent = new FormUrlEncodedContent(new[]
+            try
             {
-                new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("redirect_uri", callbackUrl!),
-                new KeyValuePair<string, string>("client_id", channelId!),
-                new KeyValuePair<string, string>("client_secret", channelSecret!)
-            });
+                var httpClient = _httpClientFactory.CreateClient();
+                var channelId = _configuration["LineLogin:ChannelId"];
+                var channelSecret = _configuration["LineLogin:ChannelSecret"];
+                var callbackUrl = Url.Page("/Account/LineBinding", "Callback", null, Request.Scheme);
 
-            var response = await httpClient.PostAsync("https://api.line.me/oauth2/v2.1/token", requestContent);
-            if (!response.IsSuccessStatusCode)
+                var requestContent = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("grant_type", "authorization_code"),
+                    new KeyValuePair<string, string>("code", code),
+                    new KeyValuePair<string, string>("redirect_uri", callbackUrl!),
+                    new KeyValuePair<string, string>("client_id", channelId!),
+                    new KeyValuePair<string, string>("client_secret", channelSecret!)
+                });
+
+                var response = await httpClient.PostAsync("https://api.line.me/oauth2/v2.1/token", requestContent);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("LINE Token 交換失敗: {StatusCode}, Response: {Response}", 
+                        response.StatusCode, responseBody);
+                    return null;
+                }
+
+                _logger.LogInformation("LINE Token API 回應: {Response}", responseBody);
+
+                return JsonSerializer.Deserialize<LineTokenResponse>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (Exception ex)
             {
-                _logger.LogWarning("LINE Token 交換失敗: {StatusCode}", response.StatusCode);
+                _logger.LogError(ex, "呼叫 LINE Token API 時發生例外");
                 return null;
             }
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<LineTokenResponse>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
         }
 
         /// <summary>
-        /// 取得 LINE 使用者資料
+        /// 從 ID Token 提取使用者資料
+        /// </summary>
+        private LineUserProfileDto? ExtractProfileFromIdToken(string idToken)
+        {
+            try
+            {
+                // ID Token 格式: header.payload.signature
+                var parts = idToken.Split('.');
+                if (parts.Length != 3)
+                {
+                    _logger.LogWarning("ID Token 格式不正確");
+                    return null;
+                }
+
+                // 解碼 payload (Base64Url)
+                var payload = parts[1];
+                // Base64Url 解碼: 替換字符並補齊 padding
+                payload = payload.Replace('-', '+').Replace('_', '/');
+                switch (payload.Length % 4)
+                {
+                    case 2: payload += "=="; break;
+                    case 3: payload += "="; break;
+                }
+
+                var jsonBytes = Convert.FromBase64String(payload);
+                var json = Encoding.UTF8.GetString(jsonBytes);
+                
+                _logger.LogInformation("ID Token Payload: {Payload}", json);
+
+                // 解析 JSON
+                var claims = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+                if (claims == null)
+                {
+                    _logger.LogWarning("無法解析 ID Token payload");
+                    return null;
+                }
+
+                // 提取使用者資訊
+                return new LineUserProfileDto
+                {
+                    UserId = claims.ContainsKey("sub") ? claims["sub"].GetString() ?? "" : "",
+                    DisplayName = claims.ContainsKey("name") ? claims["name"].GetString() ?? "" : "",
+                    PictureUrl = claims.ContainsKey("picture") ? claims["picture"].GetString() : null
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "解析 ID Token 時發生錯誤");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 取得 LINE 使用者資料 (保留作為備用方法)
         /// </summary>
         private async Task<LineUserProfileDto?> GetLineProfileAsync(string accessToken)
         {
-            var httpClient = _httpClientFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
-
-            var response = await httpClient.GetAsync("https://api.line.me/v2/profile");
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                _logger.LogWarning("取得 LINE 使用者資料失敗: {StatusCode}", response.StatusCode);
+                var httpClient = _httpClientFactory.CreateClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
+
+                var response = await httpClient.GetAsync("https://api.line.me/v2/profile");
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("取得 LINE 使用者資料失敗: {StatusCode}, Response: {Response}", 
+                        response.StatusCode, responseBody);
+                    return null;
+                }
+
+                _logger.LogInformation("LINE 使用者資料 API 回應: {Response}", responseBody);
+
+                return JsonSerializer.Deserialize<LineUserProfileDto>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "呼叫 LINE Profile API 時發生例外");
                 return null;
             }
-
-            var json = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<LineUserProfileDto>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
         }
 
         /// <summary>
@@ -326,11 +408,22 @@ namespace ClarityDesk.Pages.Account
         /// </summary>
         private class LineTokenResponse
         {
+            [JsonPropertyName("access_token")]
             public string AccessToken { get; set; } = string.Empty;
+            
+            [JsonPropertyName("expires_in")]
             public int ExpiresIn { get; set; }
+            
+            [JsonPropertyName("id_token")]
             public string IdToken { get; set; } = string.Empty;
+            
+            [JsonPropertyName("refresh_token")]
             public string RefreshToken { get; set; } = string.Empty;
+            
+            [JsonPropertyName("scope")]
             public string Scope { get; set; } = string.Empty;
+            
+            [JsonPropertyName("token_type")]
             public string TokenType { get; set; } = string.Empty;
         }
     }

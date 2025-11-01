@@ -419,16 +419,22 @@ namespace ClarityDesk.Services
         /// </summary>
         private object CreateField(string label, string value, bool bold = false, bool wrap = false, string? color = null)
         {
-            var textValue = new
+            var textProperties = new Dictionary<string, object>
             {
-                type = "text",
-                text = value,
-                size = "sm",
-                weight = bold ? "bold" : (string?)null,
-                wrap = wrap ? true : (bool?)null,
-                color = color,
-                flex = 5
+                { "type", "text" },
+                { "text", value },
+                { "size", "sm" },
+                { "flex", 5 }
             };
+
+            if (bold)
+                textProperties.Add("weight", "bold");
+            
+            if (wrap)
+                textProperties.Add("wrap", true);
+            
+            if (!string.IsNullOrEmpty(color))
+                textProperties.Add("color", color);
 
             return new
             {
@@ -437,7 +443,7 @@ namespace ClarityDesk.Services
                 contents = new object[]
                 {
                     new { type = "text", text = label, size = "sm", color = "#999999", flex = 2 },
-                    textValue
+                    textProperties
                 }
             };
         }
@@ -1116,24 +1122,42 @@ namespace ClarityDesk.Services
         {
             try
             {
-                var httpClient = _httpClientFactory.CreateClient("LineMessagingAPI");
+                // 驗證 Token 是否配置
+                if (string.IsNullOrEmpty(_channelAccessToken))
+                {
+                    _logger.LogError("LINE Channel Access Token 未設定");
+                    return null;
+                }
+
+                // 使用 LINE Content API (api-data.line.me) 下載圖片
+                var httpClient = _httpClientFactory.CreateClient("LineContentAPI");
                 httpClient.DefaultRequestHeaders.Clear();
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_channelAccessToken}");
 
-                var response = await httpClient.GetAsync($"message/{messageId}/content");
+                var endpoint = $"message/{messageId}/content";
+                _logger.LogInformation("開始下載 LINE 圖片: {Endpoint}, MessageId: {MessageId}", endpoint, messageId);
+
+                var response = await httpClient.GetAsync(endpoint);
+                
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("下載 LINE 圖片失敗: {StatusCode}", response.StatusCode);
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("下載 LINE 圖片失敗: StatusCode={StatusCode}, MessageId={MessageId}, Error={Error}", 
+                        response.StatusCode, messageId, errorBody);
                     return null;
                 }
 
                 var imageData = await response.Content.ReadAsByteArrayAsync();
+                _logger.LogInformation("成功下載 LINE 圖片: MessageId={MessageId}, Size={Size} bytes", messageId, imageData.Length);
+
                 var uploadPath = _configuration["LineMessaging:ImageUploadPath"] ?? "wwwroot/uploads/line-images";
                 var fileName = $"{DateTime.UtcNow.Ticks}_{messageId}.jpg";
                 var filePath = Path.Combine(uploadPath, fileName);
 
                 Directory.CreateDirectory(uploadPath);
                 await File.WriteAllBytesAsync(filePath, imageData);
+
+                _logger.LogInformation("LINE 圖片已儲存: {FilePath}", filePath);
 
                 return $"/uploads/line-images/{fileName}";
             }

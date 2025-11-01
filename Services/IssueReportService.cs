@@ -18,6 +18,7 @@ public class IssueReportService : IIssueReportService
     private readonly IMemoryCache _cache;
     private readonly ILogger<IssueReportService> _logger;
     private readonly ILineMessagingService _lineMessagingService;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     private const string CacheKeyStatistics = "issue_statistics";
     private const int CacheExpirationMinutes = 5;
@@ -26,12 +27,14 @@ public class IssueReportService : IIssueReportService
         ApplicationDbContext context,
         IMemoryCache cache,
         ILogger<IssueReportService> logger,
-        ILineMessagingService lineMessagingService)
+        ILineMessagingService lineMessagingService,
+        IServiceScopeFactory serviceScopeFactory)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _lineMessagingService = lineMessagingService ?? throw new ArgumentNullException(nameof(lineMessagingService));
+        _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
     }
 
     /// <inheritdoc />
@@ -70,26 +73,41 @@ public class IssueReportService : IIssueReportService
             // 發送 LINE 推送通知 (Fail-safe: 失敗不影響回報單建立)
             if (issue.AssignedUserId > 0)
             {
+                var issueId = issue.Id;
+                var assignedUserId = issue.AssignedUserId;
+                
                 _ = Task.Run(async () =>
                 {
                     try
                     {
-                        var issueDto = await GetIssueReportByIdAsync(issue.Id);
-                        if (issueDto != null)
+                        using var scope = _serviceScopeFactory.CreateScope();
+                        var scopedContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                        var scopedLineService = scope.ServiceProvider.GetRequiredService<ILineMessagingService>();
+                        
+                        var issueEntity = await scopedContext.IssueReports
+                            .Include(i => i.AssignedUser)
+                            .Include(i => i.LastModifiedBy)
+                            .Include(i => i.DepartmentAssignments)
+                                .ThenInclude(da => da.Department)
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(i => i.Id == issueId);
+                        
+                        if (issueEntity != null)
                         {
-                            var assignedUserBinding = await _context.LineBindings
-                                .Where(lb => lb.UserId == issue.AssignedUserId && lb.IsActive)
+                            var issueDto = issueEntity.ToDto();
+                            var assignedUserBinding = await scopedContext.LineBindings
+                                .Where(lb => lb.UserId == assignedUserId && lb.IsActive)
                                 .FirstOrDefaultAsync();
 
                             if (assignedUserBinding != null)
                             {
-                                await _lineMessagingService.PushNewIssueNotificationAsync(issueDto, assignedUserBinding.LineUserId);
+                                await scopedLineService.PushNewIssueNotificationAsync(issueDto, assignedUserBinding.LineUserId);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "發送新問題 LINE 通知時發生錯誤 (Issue: {IssueId})", issue.Id);
+                        _logger.LogError(ex, "發送新問題 LINE 通知時發生錯誤 (Issue: {IssueId})", issueId);
                     }
                 });
             }
@@ -175,53 +193,70 @@ public class IssueReportService : IIssueReportService
             }
 
             // 發送 LINE 推送通知 (Fail-safe: 失敗不影響回報單更新)
+            var issueId = id;
+            var newStatus = issue.Status;
+            var assignedUserId = issue.AssignedUserId;
+            
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    var issueDto = await GetIssueReportByIdAsync(id);
-                    if (issueDto == null) return;
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var scopedContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    var scopedLineService = scope.ServiceProvider.GetRequiredService<ILineMessagingService>();
+                    
+                    var issueEntity = await scopedContext.IssueReports
+                        .Include(i => i.AssignedUser)
+                        .Include(i => i.LastModifiedBy)
+                        .Include(i => i.DepartmentAssignments)
+                            .ThenInclude(da => da.Department)
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(i => i.Id == issueId);
+                    
+                    if (issueEntity == null) return;
+                    
+                    var issueDto = issueEntity.ToDto();
 
                     // 檢測狀態變更
-                    if (oldStatus != issue.Status)
+                    if (oldStatus != newStatus)
                     {
                         // 通知指派人員和回報人
                         var notifyUserIds = new List<int>();
-                        if (issue.AssignedUserId > 0)
-                            notifyUserIds.Add(issue.AssignedUserId);
+                        if (assignedUserId > 0)
+                            notifyUserIds.Add(assignedUserId);
 
                         // TODO: 如需通知回報人,需從 issue 取得 createdBy 或類似欄位
 
                         foreach (var userId in notifyUserIds.Distinct())
                         {
-                            var binding = await _context.LineBindings
+                            var binding = await scopedContext.LineBindings
                                 .Where(lb => lb.UserId == userId && lb.IsActive)
                                 .FirstOrDefaultAsync();
 
                             if (binding != null)
                             {
-                                await _lineMessagingService.PushStatusChangedNotificationAsync(
+                                await scopedLineService.PushStatusChangedNotificationAsync(
                                     issueDto,
                                     oldStatus.ToString(),
-                                    issue.Status.ToString(),
+                                    newStatus.ToString(),
                                     binding.LineUserId);
                             }
                         }
                     }
 
                     // 檢測指派變更
-                    if (oldAssignedUserId != issue.AssignedUserId && issue.AssignedUserId > 0)
+                    if (oldAssignedUserId != assignedUserId && assignedUserId > 0)
                     {
-                        var newAssigneeBinding = await _context.LineBindings
-                            .Where(lb => lb.UserId == issue.AssignedUserId && lb.IsActive)
+                        var newAssigneeBinding = await scopedContext.LineBindings
+                            .Where(lb => lb.UserId == assignedUserId && lb.IsActive)
                             .FirstOrDefaultAsync();
 
                         if (newAssigneeBinding != null)
                         {
-                            var newAssignee = await _context.Users.FindAsync(issue.AssignedUserId);
+                            var newAssignee = await scopedContext.Users.FindAsync(assignedUserId);
                             if (newAssignee != null)
                             {
-                                await _lineMessagingService.PushAssignmentChangedNotificationAsync(
+                                await scopedLineService.PushAssignmentChangedNotificationAsync(
                                     issueDto,
                                     newAssignee.DisplayName,
                                     newAssigneeBinding.LineUserId);
@@ -231,7 +266,7 @@ public class IssueReportService : IIssueReportService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "發送 LINE 通知時發生錯誤 (Issue: {IssueId})", id);
+                    _logger.LogError(ex, "發送 LINE 通知時發生錯誤 (Issue: {IssueId})", issueId);
                 }
             });
 

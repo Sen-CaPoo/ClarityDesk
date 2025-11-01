@@ -1,10 +1,10 @@
-# CLAUDE.md
+# GitHub Copilot Instructions for ClarityDesk
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides essential guidance for AI coding agents working with the ClarityDesk codebase.
 
 ## Project Overview
 
-ClarityDesk is an Issue Tracking and Help Desk Management System built with **ASP.NET Core 8.0** using Razor Pages architecture. The application provides department-based issue assignment workflows with LINE Login authentication integration for the Asian market.
+ClarityDesk is an **Issue Tracking and Help Desk Management System** built with **ASP.NET Core 8.0** using Razor Pages architecture. The application provides department-based issue assignment workflows with LINE Login authentication and LINE Messaging integration for the Asian market.
 
 ## Technology Stack
 
@@ -12,13 +12,14 @@ ClarityDesk is an Issue Tracking and Help Desk Management System built with **AS
 - **Language**: C# with nullable reference types enabled
 - **Database**: SQL Server with Entity Framework Core 8.0
 - **Authentication**: LINE Login OAuth 2.0 with cookie-based sessions
+- **Messaging**: LINE Messaging API with Webhook integration
 - **Testing**: xUnit, Moq, FluentAssertions, EF Core InMemory
 - **Frontend**: Bootstrap 5, jQuery, Bootstrap Icons
 
 ## Essential Commands
 
 ### Build and Run
-```bash
+```powershell
 # Restore dependencies
 dotnet restore
 
@@ -33,7 +34,7 @@ dotnet publish -c Release
 ```
 
 ### Testing
-```bash
+```powershell
 # Run all tests (unit + integration)
 dotnet test
 
@@ -48,7 +49,7 @@ dotnet test --collect:"XPlat Code Coverage"
 ```
 
 ### Database Management
-```bash
+```powershell
 # Create a new migration
 dotnet ef migrations add <MigrationName>
 
@@ -81,20 +82,24 @@ SQL Server Database
 
 ### Key Directories
 
+- **`Controllers/`** - API Controllers (LINE Webhook endpoint)
 - **`Data/`** - EF Core DbContext, entity configurations (Fluent API), database seeding
 - **`Models/`** - Domain entities, DTOs, ViewModels, enums, extensions
-  - `Entities/` - Database entities (User, IssueReport, Department, etc.)
-  - `Enums/` - UserRole, IssueStatus, PriorityLevel
+  - `Entities/` - Database entities (User, IssueReport, Department, LineBinding, LinePushLog, LineConversationState)
+  - `Enums/` - UserRole, IssueStatus, PriorityLevel, ConversationStep, LinePushStatus
   - `ViewModels/` - Razor Page-specific view models
+  - `DTOs/` - Data transfer objects for LINE integration
 - **`Services/`** - Business logic with interface-based design
   - All services follow `IServiceName` / `ServiceName` pattern
+  - `ConversationCleanupService.cs` - Background service for cleaning expired LINE conversation states
 - **`Pages/`** - Razor Pages (.cshtml/.cs pairs)
   - `Issues/` - Issue CRUD operations
   - `Admin/` - User and department management
-  - `Account/` - Authentication flows
+  - `Account/` - Authentication flows (Login, LineBinding)
 - **`Infrastructure/`** - Cross-cutting concerns (middleware, auth handlers, filters, tag helpers)
 - **`Migrations/`** - EF Core database migrations
 - **`Tests/`** - Separate projects for unit and integration tests
+- **`specs/`** - Feature specifications and documentation (e.g., `001-line-integration/`)
 
 ### Domain Model Relationships
 
@@ -104,12 +109,18 @@ SQL Server Database
 - **Department**: Organizational units
 - **DepartmentAssignment**: Join table linking Issues to Departments (many-to-many)
 - **DepartmentUser**: Join table linking Users to Departments (many-to-many)
+- **LineBinding**: Links system users to LINE user IDs (one-to-one, with IsActive flag for unbinding)
+- **LinePushLog**: Audit trail for LINE message pushes (success/failure, retry count)
+- **LineConversationState**: Tracks multi-step LINE conversation state for issue reporting (expires after 24 hours)
 
 **Key Relationships:**
 - IssueReport → User (AssignedUser): Many-to-One
 - IssueReport → User (LastModifiedBy): Many-to-One for audit trail
 - IssueReport ↔ Department: Many-to-Many via DepartmentAssignment
 - Department ↔ User: Many-to-Many via DepartmentUser
+- User → LineBinding: One-to-One (active binding only, historical bindings tracked with IsActive = false)
+- IssueReport → LinePushLog: One-to-Many (multiple push attempts/notifications per issue)
+- LineConversationState → User: Many-to-One (conversation owned by user)
 
 ## Configuration
 
@@ -124,6 +135,11 @@ SQL Server Database
     "ChannelId": "YOUR_LINE_CHANNEL_ID",
     "ChannelSecret": "YOUR_LINE_CHANNEL_SECRET",
     "CallbackPath": "/signin-line"
+  },
+  "LineMessaging": {
+    "ChannelAccessToken": "YOUR_CHANNEL_ACCESS_TOKEN",
+    "ChannelSecret": "YOUR_CHANNEL_SECRET",
+    "BaseUrl": "https://yourapp.com"
   }
 }
 ```
@@ -137,6 +153,8 @@ SQL Server Database
 - DI container with scoped services
 - Global exception handling middleware
 - Response compression (Brotli + Gzip)
+- HttpClient for LINE Messaging API (`https://api.line.me/v2/bot/`)
+- Background service (`ConversationCleanupService`) for cleaning expired LINE conversation states
 
 ## Development Patterns and Conventions
 
@@ -146,6 +164,7 @@ All business logic is encapsulated in services with interface contracts:
 - `IAuthenticationService` - LINE OAuth integration
 - `IDepartmentService` - Department management
 - `IUserManagementService` - User administration
+- `ILineMessagingService` - LINE Messaging API integration (push notifications, webhook handling, conversation flow)
 
 Services are registered as **scoped** in DI container.
 
@@ -193,6 +212,46 @@ Implicit through EF Core:
 4. Profile sync on each login (DisplayName, PictureUrl from LINE)
 5. Claims created with UserId, Name, Role
 6. Cookie issued with 365-day expiration
+
+### LINE Messaging Integration (Feature Branch: 001-line-integration)
+
+**LINE Binding Flow** (`Pages/Account/LineBinding.cshtml`):
+1. User clicks "Bind LINE" → OAuth to LINE Messaging API
+2. System creates `LineBinding` record linking User to LINE User ID
+3. One-to-one relationship enforced (prevents duplicate bindings)
+4. Unbinding sets `IsActive = false` for audit trail
+
+**Push Notification System** (`LineMessagingService`):
+- Triggered on issue creation/assignment/status changes
+- Uses Flex Messages for rich formatting (emojis, colors, quick actions)
+- Implements exponential backoff retry (3 attempts: 1s, 2s, 4s)
+- All push attempts logged to `LinePushLog` with status tracking
+- Only sends to users with active LINE bindings
+
+**Webhook Handling** (`Controllers/LineWebhookController.cs`):
+- Validates HMAC-SHA256 signature with `LineMessaging:ChannelSecret`
+- **Must respond within 3 seconds** (LINE requirement) - uses fire-and-forget async processing
+- Processes message events (text/image) and postback events (button clicks)
+- Returns 200 OK even on errors to prevent LINE retries
+
+**Conversational Issue Reporting**:
+- Multi-step conversation tracked in `LineConversationState` (expires after 24 hours)
+- Steps: AskTitle → AskContent → AskDepartment → AskPriority → AskCustomerName → AskCustomerPhone → AskImages → Confirm
+- Uses Quick Reply buttons for department/priority selection
+- Supports image uploads (max 3, stored temporarily in `wwwroot/uploads/line-images/`)
+- `ConversationCleanupService` background service runs hourly to purge expired states
+
+**Configuration Required** (`appsettings.json`):
+```json
+{
+  "LineMessaging": {
+    "ChannelAccessToken": "YOUR_CHANNEL_ACCESS_TOKEN",
+    "ChannelSecret": "YOUR_CHANNEL_SECRET",
+    "BaseUrl": "https://yourapp.com",
+    "ImageUploadPath": "wwwroot/uploads/line-images"
+  }
+}
+```
 
 ### Issue Filtering System
 `IssueReportService.GetFilteredIssuesAsync()` supports:

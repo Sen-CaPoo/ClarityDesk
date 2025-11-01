@@ -179,6 +179,13 @@ namespace ClarityDesk
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
 
+            // 註冊 HttpClient for LINE Content API (圖片/影片/音訊下載)
+            builder.Services.AddHttpClient("LineContentAPI", client =>
+            {
+                client.BaseAddress = new Uri("https://api-data.line.me/v2/bot/");
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
             // 註冊服務層
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IIssueReportService, ClarityDesk.Services.IssueReportService>();
             builder.Services.AddScoped<ClarityDesk.Services.Interfaces.IAuthenticationService, ClarityDesk.Services.AuthenticationService>();
