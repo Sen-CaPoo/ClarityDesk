@@ -74,17 +74,9 @@ namespace ClarityDesk.Pages.Issues
                 {
                     Title = issueDto.Title,
                     Content = issueDto.Content,
-                    // 使用 CreatedAt 而非 RecordDate，因為 CreatedAt 有完整的時間資訊
-                    // 將 UTC 時間轉換為台北時間，並設為 Unspecified 讓瀏覽器當作本地時間
-                    // 去除毫秒部分，只保留到秒
+                    // RecordDate 從資料庫（UTC）轉換為台北時間（UTC+8），設為 Unspecified 讓瀏覽器正確顯示
                     RecordDate = DateTime.SpecifyKind(
-                        new DateTime(
-                            TimeZoneHelper.ConvertToTaipeiTime(issueDto.CreatedAt).Year,
-                            TimeZoneHelper.ConvertToTaipeiTime(issueDto.CreatedAt).Month,
-                            TimeZoneHelper.ConvertToTaipeiTime(issueDto.CreatedAt).Day,
-                            TimeZoneHelper.ConvertToTaipeiTime(issueDto.CreatedAt).Hour,
-                            TimeZoneHelper.ConvertToTaipeiTime(issueDto.CreatedAt).Minute,
-                            TimeZoneHelper.ConvertToTaipeiTime(issueDto.CreatedAt).Second),
+                        TimeZoneHelper.ConvertToTaipeiTime(DateTime.SpecifyKind(issueDto.RecordDate, DateTimeKind.Utc)),
                         DateTimeKind.Unspecified),
                     Status = issueDto.Status,
                     Priority = issueDto.Priority,
@@ -131,7 +123,7 @@ namespace ClarityDesk.Pages.Issues
                     return Page();
                 }
                 
-                // 將瀏覽器傳來的本地時間轉換為 UTC 時間儲存
+                // 將瀏覽器傳來的本地時間（台北時間 UTC+8）轉換為 UTC 時間儲存
                 if (IssueReport.RecordDate.Kind == DateTimeKind.Unspecified)
                 {
                     IssueReport.RecordDate = TimeZoneHelper.ConvertToUtc(IssueReport.RecordDate);

@@ -26,7 +26,7 @@ public class CreateIssueReportDto
     /// 紀錄日期
     /// </summary>
     [Required(ErrorMessage = "紀錄日期為必填欄位")]
-    [DataType(DataType.Date)]
+    [DataType(DataType.DateTime)]
     public DateTime RecordDate { get; set; }
 
     /// <summary>

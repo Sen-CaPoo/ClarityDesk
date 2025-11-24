@@ -23,7 +23,7 @@ namespace ClarityDesk.Data.Configurations
             
             builder.Property(i => i.RecordDate)
                 .IsRequired()
-                .HasColumnType("date");
+                .HasColumnType("datetime2");
             
             builder.Property(i => i.Status)
                 .IsRequired()
